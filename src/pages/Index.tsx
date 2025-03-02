@@ -3,17 +3,24 @@ import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
+import { toast } from "@/hooks/use-toast";
 
 const Index = () => {
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleGetStarted = () => {
     setLoading(true);
     // Simulate loading
     setTimeout(() => {
       setLoading(false);
-      // Navigation would go here in a real app
+      toast({
+        title: "Welcome!",
+        description: "You've successfully started the Reddit Listening Tool.",
+      });
       console.log("Get started clicked");
+      // navigate("/dashboard"); // Uncomment when dashboard page is created
     }, 1000);
   };
 
