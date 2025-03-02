@@ -1,16 +1,15 @@
-
 import { toast } from "@/hooks/use-toast";
 
-// Reddit API credentials - YOU WILL NEED TO REPLACE THESE
+// Reddit API credentials
 // To get these credentials, you need to:
 // 1. Go to https://www.reddit.com/prefs/apps
 // 2. Create a new app (select "script" type)
 // 3. Fill in the required information
 // 4. After creation, you'll get client ID and secret
-const REDDIT_CLIENT_ID = "YOUR_CLIENT_ID";
-const REDDIT_CLIENT_SECRET = "YOUR_CLIENT_SECRET";
-const REDDIT_USERNAME = "YOUR_REDDIT_USERNAME";
-const REDDIT_PASSWORD = "YOUR_REDDIT_PASSWORD";
+const REDDIT_CLIENT_ID = "YOUR_CLIENT_ID"; // Replace with your actual Client ID
+const REDDIT_CLIENT_SECRET = "YOUR_CLIENT_SECRET"; // Replace with your actual Client Secret
+const REDDIT_USERNAME = "YOUR_REDDIT_USERNAME"; // Replace with your Reddit username
+const REDDIT_PASSWORD = "YOUR_REDDIT_PASSWORD"; // Replace with your Reddit password
 
 // Types for our Reddit API data
 export interface RedditPost {
