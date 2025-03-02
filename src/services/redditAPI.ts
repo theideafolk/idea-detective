@@ -1,3 +1,4 @@
+
 import { toast } from "@/hooks/use-toast";
 
 // Reddit API credentials
@@ -10,6 +11,9 @@ const REDDIT_CLIENT_ID = "g9xgMKksLNWm_8KnQH054Q"; // Replace with your actual C
 const REDDIT_CLIENT_SECRET = "4PFWeZFNXhiW3Td0A52L92i7MvDUyg"; // Replace with your actual Client Secret
 const REDDIT_USERNAME = "hello@theideafolk.com"; // Replace with your Reddit username
 const REDDIT_PASSWORD = "Reddit@2025"; // Replace with your Reddit password
+
+// Flag to determine if we're using mock data or real API
+const USE_MOCK_DATA = false; // Set to false since we have real credentials now
 
 // Types for our Reddit API data
 export interface RedditPost {
@@ -51,8 +55,8 @@ const getRedditAccessToken = async (): Promise<string> => {
     return accessToken;
   }
 
-  // If REDDIT_CLIENT_ID is still the default value, return mock data
-  if (REDDIT_CLIENT_ID === "YOUR_CLIENT_ID") {
+  // If we're configured to use mock data, return early
+  if (USE_MOCK_DATA) {
     throw new Error("Reddit API credentials not configured");
   }
 
@@ -98,8 +102,8 @@ export const searchRedditPosts = async (query: string): Promise<RedditPost[]> =>
     : 'https://oauth.reddit.com/r/marketing+socialmedia+SEO+projectmanagement/hot.json?limit=10';
   
   try {
-    // For demo purposes, if the credentials haven't been set, return mock data
-    if (REDDIT_CLIENT_ID === "YOUR_CLIENT_ID") {
+    // For demo purposes, if we're using mock data, return mock data
+    if (USE_MOCK_DATA) {
       return getMockRedditPosts();
     }
 
@@ -148,8 +152,8 @@ export const searchRedditPosts = async (query: string): Promise<RedditPost[]> =>
  */
 export const getRedditPostComments = async (postId: string, subreddit: string): Promise<RedditComment[]> => {
   try {
-    // For demo purposes, if the credentials haven't been set, return mock data
-    if (REDDIT_CLIENT_ID === "YOUR_CLIENT_ID") {
+    // For demo purposes, if we're using mock data, return mock data
+    if (USE_MOCK_DATA) {
       const mockPosts = getMockRedditPosts();
       const post = mockPosts.find(p => p.id === postId);
       return post?.commentsList || [];
