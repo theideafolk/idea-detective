@@ -20,7 +20,7 @@ const Index = () => {
         description: "You've successfully started the Reddit Listening Tool.",
       });
       console.log("Get started clicked");
-      // navigate("/dashboard"); // Uncomment when dashboard page is created
+      navigate("/dashboard"); // Navigate to dashboard page
     }, 1000);
   };
 
