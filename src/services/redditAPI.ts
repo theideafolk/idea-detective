@@ -1,4 +1,3 @@
-
 import { toast } from "@/hooks/use-toast";
 
 // Reddit API credentials
@@ -13,8 +12,8 @@ const REDDIT_USERNAME = "hello@theideafolk.com"; // Replace with your Reddit use
 const REDDIT_PASSWORD = "Reddit@2025"; // Replace with your Reddit password
 
 // Flag to determine if we're using mock data or real API
-// Setting to true by default due to authentication issues with the provided credentials
-const USE_MOCK_DATA = true;
+// Setting to false to use the real API data as requested
+const USE_MOCK_DATA = false;
 
 // Types for our Reddit API data
 export interface RedditPost {
@@ -53,17 +52,14 @@ let tokenExpiry = 0;
 const getRedditAccessToken = async (): Promise<string> => {
   // Check if we have a valid token
   if (accessToken && Date.now() < tokenExpiry) {
+    console.log("Using existing valid token");
     return accessToken;
-  }
-
-  // If we're configured to use mock data, return early with a mock token
-  if (USE_MOCK_DATA) {
-    console.log("Using mock data, returning mock token");
-    return "mock-token";
   }
 
   try {
     console.log("Attempting to authenticate with Reddit API");
+    console.log("Using credentials: Username:", REDDIT_USERNAME, "Client ID:", REDDIT_CLIENT_ID.substring(0, 5) + "...");
+    
     const basicAuth = btoa(`${REDDIT_CLIENT_ID}:${REDDIT_CLIENT_SECRET}`);
     const response = await fetch("https://www.reddit.com/api/v1/access_token", {
       method: "POST",
@@ -82,7 +78,17 @@ const getRedditAccessToken = async (): Promise<string> => {
     
     if (!response.ok || responseData.error) {
       console.error("Reddit authentication failed:", responseData);
-      throw new Error(`Reddit API authentication error: ${responseData.error || response.status}`);
+      
+      // Show more specific error messages
+      if (responseData.error === "invalid_grant") {
+        throw new Error("Reddit API authentication error: Username or password is incorrect");
+      } else if (responseData.error === "unsupported_grant_type") {
+        throw new Error("Reddit API authentication error: The grant type is not supported");
+      } else if (responseData.error === "invalid_client") {
+        throw new Error("Reddit API authentication error: Client ID or secret is invalid");
+      } else {
+        throw new Error(`Reddit API authentication error: ${responseData.error || response.status}`);
+      }
     }
 
     const data: RedditAuthResponse = responseData;
@@ -95,6 +101,11 @@ const getRedditAccessToken = async (): Promise<string> => {
     return accessToken;
   } catch (error) {
     console.error("Failed to get Reddit access token:", error);
+    // Only fall back to mock data if the user has enabled it
+    if (USE_MOCK_DATA) {
+      console.log("Falling back to mock token due to authentication error");
+      return "mock-token";
+    }
     throw error;
   }
 };
@@ -103,9 +114,9 @@ const getRedditAccessToken = async (): Promise<string> => {
  * Search Reddit for posts matching a query
  */
 export const searchRedditPosts = async (query: string): Promise<RedditPost[]> => {
-  // If we're using mock data, return mock data immediately
+  // Only use mock data if specifically configured to do so
   if (USE_MOCK_DATA) {
-    console.log("Using mock data for Reddit posts");
+    console.log("Using mock data for Reddit posts as configured");
     return getMockRedditPosts();
   }
   
@@ -151,11 +162,16 @@ export const searchRedditPosts = async (query: string): Promise<RedditPost[]> =>
     console.error("Error searching Reddit:", error);
     toast({
       title: "API Error",
-      description: "Could not fetch Reddit data. Using mock data instead.",
+      description: error instanceof Error ? error.message : "Failed to fetch Reddit data",
       variant: "destructive",
     });
-    // Fall back to mock data
-    return getMockRedditPosts();
+    
+    // Only fall back to mock data if the user has enabled it
+    if (USE_MOCK_DATA) {
+      console.log("Falling back to mock data due to error");
+      return getMockRedditPosts();
+    }
+    throw error;
   }
 };
 
@@ -163,9 +179,9 @@ export const searchRedditPosts = async (query: string): Promise<RedditPost[]> =>
  * Get comments for a specific Reddit post
  */
 export const getRedditPostComments = async (postId: string, subreddit: string): Promise<RedditComment[]> => {
-  // If we're using mock data, return mock data immediately
+  // Only use mock data if specifically configured to do so
   if (USE_MOCK_DATA) {
-    console.log("Using mock data for Reddit comments");
+    console.log("Using mock data for Reddit comments as configured");
     const mockPosts = getMockRedditPosts();
     const post = mockPosts.find(p => p.id === postId);
     return post?.commentsList || [];
@@ -182,6 +198,8 @@ export const getRedditPostComments = async (postId: string, subreddit: string): 
     });
 
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Reddit API comments error:", errorText);
       throw new Error(`Reddit API error: ${response.status}`);
     }
 
@@ -203,13 +221,18 @@ export const getRedditPostComments = async (postId: string, subreddit: string): 
     console.error("Error fetching Reddit comments:", error);
     toast({
       title: "API Error",
-      description: "Could not fetch comments. Using mock data instead.",
+      description: error instanceof Error ? error.message : "Could not fetch comments",
       variant: "destructive",
     });
-    // Fall back to mock data
-    const mockPosts = getMockRedditPosts();
-    const post = mockPosts.find(p => p.id === postId);
-    return post?.commentsList || [];
+    
+    // Only fall back to mock data if the user has enabled it
+    if (USE_MOCK_DATA) {
+      console.log("Falling back to mock data for comments due to error");
+      const mockPosts = getMockRedditPosts();
+      const post = mockPosts.find(p => p.id === postId);
+      return post?.commentsList || [];
+    }
+    throw error;
   }
 };
 
