@@ -13,7 +13,8 @@ const REDDIT_USERNAME = "hello@theideafolk.com"; // Replace with your Reddit use
 const REDDIT_PASSWORD = "Reddit@2025"; // Replace with your Reddit password
 
 // Flag to determine if we're using mock data or real API
-const USE_MOCK_DATA = false; // Set to false since we have real credentials now
+// Setting to true by default due to authentication issues with the provided credentials
+const USE_MOCK_DATA = true;
 
 // Types for our Reddit API data
 export interface RedditPost {
@@ -55,12 +56,14 @@ const getRedditAccessToken = async (): Promise<string> => {
     return accessToken;
   }
 
-  // If we're configured to use mock data, return early
+  // If we're configured to use mock data, return early with a mock token
   if (USE_MOCK_DATA) {
-    throw new Error("Reddit API credentials not configured");
+    console.log("Using mock data, returning mock token");
+    return "mock-token";
   }
 
   try {
+    console.log("Attempting to authenticate with Reddit API");
     const basicAuth = btoa(`${REDDIT_CLIENT_ID}:${REDDIT_CLIENT_SECRET}`);
     const response = await fetch("https://www.reddit.com/api/v1/access_token", {
       method: "POST",
@@ -75,15 +78,19 @@ const getRedditAccessToken = async (): Promise<string> => {
       }),
     });
 
-    if (!response.ok) {
-      throw new Error(`Reddit API error: ${response.status}`);
+    const responseData = await response.json();
+    
+    if (!response.ok || responseData.error) {
+      console.error("Reddit authentication failed:", responseData);
+      throw new Error(`Reddit API authentication error: ${responseData.error || response.status}`);
     }
 
-    const data: RedditAuthResponse = await response.json();
+    const data: RedditAuthResponse = responseData;
     accessToken = data.access_token;
     
     // Set token expiry (subtract 5 minutes to be safe)
     tokenExpiry = Date.now() + (data.expires_in - 300) * 1000;
+    console.log("Successfully authenticated with Reddit API");
     
     return accessToken;
   } catch (error) {
@@ -96,18 +103,21 @@ const getRedditAccessToken = async (): Promise<string> => {
  * Search Reddit for posts matching a query
  */
 export const searchRedditPosts = async (query: string): Promise<RedditPost[]> => {
+  // If we're using mock data, return mock data immediately
+  if (USE_MOCK_DATA) {
+    console.log("Using mock data for Reddit posts");
+    return getMockRedditPosts();
+  }
+  
   // If no query provided, use a default subreddit
   const searchEndpoint = query 
     ? `https://oauth.reddit.com/search.json?q=${encodeURIComponent(query)}&sort=relevance&limit=10` 
     : 'https://oauth.reddit.com/r/marketing+socialmedia+SEO+projectmanagement/hot.json?limit=10';
   
   try {
-    // For demo purposes, if we're using mock data, return mock data
-    if (USE_MOCK_DATA) {
-      return getMockRedditPosts();
-    }
-
     const token = await getRedditAccessToken();
+    console.log("Fetching Reddit posts with token:", token.substring(0, 5) + "...");
+    
     const response = await fetch(searchEndpoint, {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -115,6 +125,8 @@ export const searchRedditPosts = async (query: string): Promise<RedditPost[]> =>
     });
 
     if (!response.ok) {
+      const errorData = await response.text();
+      console.error("Reddit API error response:", errorData);
       throw new Error(`Reddit API error: ${response.status}`);
     }
 
@@ -151,15 +163,18 @@ export const searchRedditPosts = async (query: string): Promise<RedditPost[]> =>
  * Get comments for a specific Reddit post
  */
 export const getRedditPostComments = async (postId: string, subreddit: string): Promise<RedditComment[]> => {
+  // If we're using mock data, return mock data immediately
+  if (USE_MOCK_DATA) {
+    console.log("Using mock data for Reddit comments");
+    const mockPosts = getMockRedditPosts();
+    const post = mockPosts.find(p => p.id === postId);
+    return post?.commentsList || [];
+  }
+  
   try {
-    // For demo purposes, if we're using mock data, return mock data
-    if (USE_MOCK_DATA) {
-      const mockPosts = getMockRedditPosts();
-      const post = mockPosts.find(p => p.id === postId);
-      return post?.commentsList || [];
-    }
-
     const token = await getRedditAccessToken();
+    console.log("Fetching Reddit comments with token");
+    
     const response = await fetch(`https://oauth.reddit.com/r/${subreddit}/comments/${postId}.json`, {
       headers: {
         Authorization: `Bearer ${token}`,
