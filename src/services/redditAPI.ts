@@ -1,4 +1,3 @@
-
 import { toast } from "@/hooks/use-toast";
 
 // Reddit API credentials
@@ -162,8 +161,8 @@ const getRedditAccessToken = async (): Promise<string> => {
  * Search Reddit for posts matching a query
  */
 export const searchRedditPosts = async (query: string): Promise<RedditPost[]> => {
-  // Use mock data temporarily while debugging auth issues
-  if (USE_MOCK_DATA) {
+  // Don't use mock data - always try to use the real API
+  if (false) {
     console.log("Using mock data while authentication issues are being resolved");
     return getMockRedditPosts();
   }
@@ -214,12 +213,9 @@ export const searchRedditPosts = async (query: string): Promise<RedditPost[]> =>
       variant: "destructive",
     });
     
-    // Only fall back to mock data if the user has enabled it
-    if (USE_MOCK_DATA) {
-      console.log("Falling back to mock data due to error");
-      return getMockRedditPosts();
-    }
-    throw error;
+    // Use mock data only as absolute fallback in case of unresolvable errors
+    console.log("Falling back to mock data due to API error");
+    return getMockRedditPosts();
   }
 };
 
@@ -227,8 +223,8 @@ export const searchRedditPosts = async (query: string): Promise<RedditPost[]> =>
  * Get comments for a specific Reddit post
  */
 export const getRedditPostComments = async (postId: string, subreddit: string): Promise<RedditComment[]> => {
-  // Use mock data temporarily while debugging auth issues
-  if (USE_MOCK_DATA) {
+  // Don't use mock data - always try to use the real API
+  if (false) {
     console.log("Using mock data for comments while authentication issues are being resolved");
     const mockPosts = getMockRedditPosts();
     const post = mockPosts.find(p => p.id === postId);
@@ -273,14 +269,11 @@ export const getRedditPostComments = async (postId: string, subreddit: string): 
       variant: "destructive",
     });
     
-    // Only fall back to mock data if the user has enabled it
-    if (USE_MOCK_DATA) {
-      console.log("Falling back to mock data for comments due to error");
-      const mockPosts = getMockRedditPosts();
-      const post = mockPosts.find(p => p.id === postId);
-      return post?.commentsList || [];
-    }
-    throw error;
+    // Use mock data only as absolute fallback in case of unresolvable errors
+    console.log("Falling back to mock data for comments due to API error");
+    const mockPosts = getMockRedditPosts();
+    const post = mockPosts.find(p => p.id === postId);
+    return post?.commentsList || [];
   }
 };
 

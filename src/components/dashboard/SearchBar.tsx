@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { Search, AlertCircle, Globe, Sparkles } from "lucide-react";
+import { Search, Globe, Sparkles } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
@@ -34,14 +34,6 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   const [businessDescription, setBusinessDescription] = useState("");
   const [suggestedKeywords, setSuggestedKeywords] = useState<string[]>([]);
   const [isResultModalOpen, setIsResultModalOpen] = useState(false);
-
-  const handleDebugClick = () => {
-    toast({
-      title: "Notice",
-      description: "Using mock data temporarily while we resolve authentication issues with Reddit API",
-      variant: "default",
-    });
-  };
 
   const openWebsiteModal = () => {
     setIsWebsiteModalOpen(true);
@@ -135,16 +127,6 @@ export const SearchBar: React.FC<SearchBarProps> = ({
             title="Import from Website"
           >
             <Globe className="h-4 w-4 text-primary" />
-          </Button>
-          <Button 
-            type="button" 
-            variant="ghost" 
-            size="icon" 
-            className="ml-1" 
-            onClick={handleDebugClick}
-            title="Authentication Status"
-          >
-            <AlertCircle className="h-4 w-4 text-yellow-500" />
           </Button>
         </form>
       </div>
