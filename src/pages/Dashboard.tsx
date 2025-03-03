@@ -121,7 +121,7 @@ const Dashboard = () => {
             <CardHeader>
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <CardTitle>Relevant Conversations</CardTitle>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-col md:flex-row items-start md:items-center gap-2">
                   <SearchBar 
                     searchQuery={searchQuery}
                     setSearchQuery={setSearchQuery}
