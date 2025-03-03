@@ -37,12 +37,12 @@ export const AnalyticsCards: React.FC<AnalyticsCardsProps> = ({
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-      <Card className="overflow-hidden group hover:shadow-lg transition-all duration-300">
-        <CardHeader className="flex flex-row items-center justify-between pb-2 bg-gradient-to-r from-blue-50 to-transparent dark:from-blue-950/40 dark:to-transparent">
+      <Card className="overflow-hidden group hover:shadow-lg transition-all duration-300 border-t-2 border-t-reddit-light">
+        <CardHeader className="flex flex-row items-center justify-between pb-2 bg-gradient-to-r from-reddit-light/30 to-transparent">
           <CardTitle className="text-sm font-medium">
             Tracked Keywords
           </CardTitle>
-          <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          <TrendingUp className="h-4 w-4 text-reddit" />
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{displayKeywords.length}</div>
@@ -51,7 +51,7 @@ export const AnalyticsCards: React.FC<AnalyticsCardsProps> = ({
           </p>
           <div className="mt-3 flex flex-wrap gap-1">
             {displayKeywords.slice(0, 5).map((keyword, index) => (
-              <Badge key={index} variant="outline" className="bg-blue-50 dark:bg-blue-950/40">
+              <Badge key={index} variant="outline" className="border-reddit-light text-reddit-dark">
                 {keyword}
               </Badge>
             ))}
@@ -59,12 +59,12 @@ export const AnalyticsCards: React.FC<AnalyticsCardsProps> = ({
         </CardContent>
       </Card>
       
-      <Card className="overflow-hidden group hover:shadow-lg transition-all duration-300">
-        <CardHeader className="flex flex-row items-center justify-between pb-2 bg-gradient-to-r from-purple-50 to-transparent dark:from-purple-950/40 dark:to-transparent">
+      <Card className="overflow-hidden group hover:shadow-lg transition-all duration-300 border-t-2 border-t-reddit">
+        <CardHeader className="flex flex-row items-center justify-between pb-2 bg-gradient-to-r from-reddit/20 to-transparent">
           <CardTitle className="text-sm font-medium">
             Monitored Subreddits
           </CardTitle>
-          <Eye className="h-4 w-4 text-muted-foreground" />
+          <Eye className="h-4 w-4 text-reddit" />
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{displaySubreddits.length}</div>
@@ -73,7 +73,7 @@ export const AnalyticsCards: React.FC<AnalyticsCardsProps> = ({
           </p>
           <div className="mt-3 flex flex-wrap gap-1">
             {displaySubreddits.slice(0, 5).map((subreddit, index) => (
-              <Badge key={index} variant="outline" className="bg-purple-50 dark:bg-purple-950/40">
+              <Badge key={index} variant="outline" className="border-reddit text-reddit">
                 {subreddit}
               </Badge>
             ))}
@@ -81,12 +81,12 @@ export const AnalyticsCards: React.FC<AnalyticsCardsProps> = ({
         </CardContent>
       </Card>
       
-      <Card className="overflow-hidden group hover:shadow-lg transition-all duration-300">
-        <CardHeader className="flex flex-row items-center justify-between pb-2 bg-gradient-to-r from-green-50 to-transparent dark:from-green-950/40 dark:to-transparent">
+      <Card className="overflow-hidden group hover:shadow-lg transition-all duration-300 border-t-2 border-t-reddit-dark">
+        <CardHeader className="flex flex-row items-center justify-between pb-2 bg-gradient-to-r from-reddit-dark/20 to-transparent">
           <CardTitle className="text-sm font-medium">
             New Conversations
           </CardTitle>
-          <MessageSquare className="h-4 w-4 text-muted-foreground" />
+          <MessageSquare className="h-4 w-4 text-reddit-dark" />
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{conversationCount}</div>
@@ -94,7 +94,7 @@ export const AnalyticsCards: React.FC<AnalyticsCardsProps> = ({
             Updated {isRefetching ? 'now' : 'recently'}
           </p>
           <div className="mt-3">
-            <Button variant="ghost" className="p-0 h-auto text-sm text-muted-foreground hover:text-foreground" onClick={onRefresh}>
+            <Button variant="ghost" className="p-0 h-auto text-sm text-reddit hover:text-reddit-dark" onClick={onRefresh}>
               <Calendar className="h-3 w-3 mr-1" />
               Refresh data
             </Button>

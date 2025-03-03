@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -62,6 +61,13 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				reddit: {
+					DEFAULT: '#FF4500',
+					light: '#FEC6A1',
+					dark: '#EA3D00',
+					hover: '#E03D00',
+					foreground: '#FFFFFF'
 				}
 			},
 			borderRadius: {
