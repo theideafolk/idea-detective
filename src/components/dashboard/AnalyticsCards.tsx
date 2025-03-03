@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -7,8 +6,10 @@ import {
   TrendingUp, 
   Eye, 
   MessageSquare,
-  Calendar
+  Calendar,
+  X
 } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface AnalyticsCardsProps {
   conversationCount: number;
@@ -16,6 +17,7 @@ interface AnalyticsCardsProps {
   onRefresh: () => void;
   activeKeywords?: string[];
   activeSubreddits?: string[];
+  onRemoveKeyword?: (keyword: string) => void;
 }
 
 export const AnalyticsCards: React.FC<AnalyticsCardsProps> = ({
@@ -24,6 +26,7 @@ export const AnalyticsCards: React.FC<AnalyticsCardsProps> = ({
   onRefresh,
   activeKeywords = [],
   activeSubreddits = [],
+  onRemoveKeyword = () => {},
 }) => {
   // Extract keywords from search query if available
   const displayKeywords = activeKeywords.length > 0 
@@ -51,11 +54,27 @@ export const AnalyticsCards: React.FC<AnalyticsCardsProps> = ({
           </p>
           <div className="mt-3 flex flex-wrap gap-1">
             {displayKeywords.slice(0, 5).map((keyword, index) => (
-              <Badge key={index} variant="outline" className="border-reddit-light text-reddit-dark">
+              <Badge key={index} variant="outline" className="border-reddit-light text-reddit-dark flex items-center gap-1">
                 {keyword}
+                {activeKeywords.length > 0 && (
+                  <button 
+                    onClick={() => onRemoveKeyword(keyword)}
+                    className="ml-1 rounded-full hover:bg-muted p-0.5"
+                    aria-label={`Remove ${keyword}`}
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                )}
               </Badge>
             ))}
           </div>
+          {activeKeywords.length === 0 && (
+            <Alert variant="default" className="mt-3">
+              <AlertDescription>
+                Use the search bar to add keywords to track. These are example keywords.
+              </AlertDescription>
+            </Alert>
+          )}
         </CardContent>
       </Card>
       

@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
 import { searchRedditPosts, getRedditPostComments, type RedditPost } from "@/services/redditAPI";
 import { useQuery } from "@tanstack/react-query";
-import { PanelRightOpen } from "lucide-react";
+import { PanelRightOpen, Clock } from "lucide-react";
 
 // Import the refactored components
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
@@ -16,6 +16,15 @@ import { FilterTabs } from "@/components/dashboard/FilterTabs";
 import { ConversationModal } from "@/components/dashboard/ConversationModal";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 // Predefined business queries targeting potential clients looking for AI/tech services
 const BUSINESS_QUERY_TEMPLATES = [
@@ -39,6 +48,7 @@ const Dashboard = () => {
   const [activeTab, setActiveTab] = useState("opportunities"); // Default to opportunities tab
   const [targetSubreddits, setTargetSubreddits] = useState("SaaS+AI_Agents+artificial+startups+Entrepreneur+OpenAI+boltnewbuilders+smallbusiness");
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
+  const [timeFilter, setTimeFilter] = useState("month"); // Default to month
   
   // Extract active keywords for analytics card
   const activeKeywords = searchQuery.split(/\s+OR\s+/).filter(Boolean);
@@ -54,13 +64,13 @@ const Dashboard = () => {
     refetch,
     isFetching
   } = useQuery({
-    queryKey: ['redditPosts', searchQuery, targetSubreddits],
+    queryKey: ['redditPosts', searchQuery, targetSubreddits, timeFilter],
     queryFn: () => {
       // If search query is empty, use one of the business templates randomly
       const effectiveQuery = searchQuery || 
         BUSINESS_QUERY_TEMPLATES[Math.floor(Math.random() * BUSINESS_QUERY_TEMPLATES.length)];
       
-      return searchRedditPosts(effectiveQuery, targetSubreddits);
+      return searchRedditPosts(effectiveQuery, targetSubreddits, timeFilter);
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
@@ -106,6 +116,15 @@ const Dashboard = () => {
     refetch();
   };
 
+  const handleTimeFilterChange = (time: string) => {
+    setTimeFilter(time);
+    toast({
+      title: "Time filter updated",
+      description: `Showing results from the last ${time}`,
+    });
+    refetch();
+  };
+
   const handleRefresh = () => {
     toast({
       title: "Refreshing data",
@@ -120,6 +139,23 @@ const Dashboard = () => {
 
   const closeModal = () => {
     setSelectedConversation(null);
+  };
+  
+  const handleRemoveKeyword = (keywordToRemove: string) => {
+    // Filter out the keyword to remove
+    const updatedKeywords = activeKeywords.filter(keyword => keyword !== keywordToRemove);
+    // Update the search query
+    setSearchQuery(updatedKeywords.join(" OR "));
+    
+    toast({
+      title: "Keyword removed",
+      description: `Removed "${keywordToRemove}" from tracked keywords`,
+    });
+    
+    // Refresh the search if we still have keywords, otherwise clear
+    if (updatedKeywords.length > 0) {
+      refetch();
+    }
   };
 
   // Filter conversations based on the active tab and business relevance
@@ -195,6 +231,7 @@ const Dashboard = () => {
           onRefresh={handleRefresh}
           activeKeywords={activeKeywords}
           activeSubreddits={activeSubreddits}
+          onRemoveKeyword={handleRemoveKeyword}
         />
 
         <div className="grid grid-cols-1 gap-4">
@@ -211,6 +248,47 @@ const Dashboard = () => {
                     currentSubreddits={targetSubreddits}
                     onSubredditChange={handleSubredditChange}
                   />
+                  
+                  {/* Time filter dropdown */}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" className="gap-2">
+                        <Clock className="h-4 w-4" />
+                        <span className="hidden sm:inline">{
+                          timeFilter === 'hour' ? 'Last Hour' :
+                          timeFilter === 'day' ? 'Last 24 Hours' :
+                          timeFilter === 'week' ? 'Last Week' :
+                          timeFilter === 'month' ? 'Last Month' :
+                          timeFilter === 'year' ? 'Last Year' : 'All Time'
+                        }</span>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuLabel>Filter by Time</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuGroup>
+                        <DropdownMenuItem onClick={() => handleTimeFilterChange('hour')}>
+                          Last Hour
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleTimeFilterChange('day')}>
+                          Last 24 Hours
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleTimeFilterChange('week')}>
+                          Last Week
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleTimeFilterChange('month')}>
+                          Last Month
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleTimeFilterChange('year')}>
+                          Last Year
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleTimeFilterChange('all')}>
+                          All Time
+                        </DropdownMenuItem>
+                      </DropdownMenuGroup>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                  
                   <Button 
                     variant="outline"
                     onClick={() => setShowAdvancedSearch(!showAdvancedSearch)}

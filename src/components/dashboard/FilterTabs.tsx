@@ -25,57 +25,93 @@ export const FilterTabs: React.FC<FilterTabsProps> = ({
   onRefresh,
   onViewConversation,
 }) => {
+  // Calculate pagination data
+  const totalConversations = filteredConversations.length;
+  const itemsPerPage = 10;
+  const totalPages = Math.ceil(totalConversations / itemsPerPage);
+  const [currentPage, setCurrentPage] = React.useState(1);
+  
+  // Apply pagination to conversations
+  const paginatedConversations = filteredConversations.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+  
+  // Handle page change
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
   return (
-    <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab}>
+    <Tabs defaultValue="opportunities" value={activeTab} onValueChange={setActiveTab}>
       <TabsList className="mb-4">
-        <TabsTrigger value="all">All Conversations</TabsTrigger>
+        <TabsTrigger value="opportunities">Business Opportunities</TabsTrigger>
         <TabsTrigger value="potential">Potential Leads</TabsTrigger>
-        <TabsTrigger value="trending">Trending Topics</TabsTrigger>
+        <TabsTrigger value="ai">AI Discussion</TabsTrigger>
+        <TabsTrigger value="all">All Conversations</TabsTrigger>
       </TabsList>
       
-      <TabsContent value="all" className="space-y-4">
-        <ConversationsList
-          conversations={filteredConversations}
-          isLoading={isLoading}
-          isError={isError}
-          onRefresh={onRefresh}
-          onViewConversation={onViewConversation}
-        />
-      </TabsContent>
-      
-      <TabsContent value="potential" className="space-y-4">
-        {filteredConversations.length === 0 ? (
-          <div className="text-center py-10 text-muted-foreground">
-            <p>No potential leads identified yet.</p>
-            <p className="text-sm mt-2">Try adding more keywords or refreshing the data.</p>
-          </div>
-        ) : (
+      {["opportunities", "potential", "ai", "all"].map((tab) => (
+        <TabsContent key={tab} value={tab} className="space-y-4">
           <ConversationsList
-            conversations={filteredConversations}
+            conversations={paginatedConversations}
             isLoading={isLoading}
             isError={isError}
             onRefresh={onRefresh}
             onViewConversation={onViewConversation}
           />
-        )}
-      </TabsContent>
-      
-      <TabsContent value="trending" className="space-y-4">
-        {filteredConversations.length === 0 ? (
-          <div className="text-center py-10 text-muted-foreground">
-            <p>No trending topics identified yet.</p>
-            <p className="text-sm mt-2">Trending topics will appear as more data is collected.</p>
-          </div>
-        ) : (
-          <ConversationsList
-            conversations={filteredConversations}
-            isLoading={isLoading}
-            isError={isError}
-            onRefresh={onRefresh}
-            onViewConversation={onViewConversation}
-          />
-        )}
-      </TabsContent>
+          
+          {/* Pagination controls */}
+          {filteredConversations.length > itemsPerPage && (
+            <div className="flex justify-between items-center border-t pt-4 mt-4">
+              <div className="text-sm text-muted-foreground">
+                Showing {Math.min(totalConversations, (currentPage - 1) * itemsPerPage + 1)} - {Math.min(totalConversations, currentPage * itemsPerPage)} of {totalConversations} results
+              </div>
+              <div className="flex gap-1">
+                <button 
+                  onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
+                  disabled={currentPage === 1}
+                  className="px-2.5 py-1.5 text-sm border rounded-md disabled:opacity-50"
+                >
+                  Previous
+                </button>
+                {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                  const pageNumber = i + 1;
+                  return (
+                    <button
+                      key={pageNumber}
+                      onClick={() => handlePageChange(pageNumber)}
+                      className={`px-2.5 py-1.5 text-sm border rounded-md ${
+                        currentPage === pageNumber ? "bg-primary text-primary-foreground" : ""
+                      }`}
+                    >
+                      {pageNumber}
+                    </button>
+                  );
+                })}
+                {totalPages > 5 && <span className="px-2.5 py-1.5">...</span>}
+                {totalPages > 5 && (
+                  <button
+                    onClick={() => handlePageChange(totalPages)}
+                    className={`px-2.5 py-1.5 text-sm border rounded-md ${
+                      currentPage === totalPages ? "bg-primary text-primary-foreground" : ""
+                    }`}
+                  >
+                    {totalPages}
+                  </button>
+                )}
+                <button
+                  onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
+                  disabled={currentPage === totalPages || totalPages === 0}
+                  className="px-2.5 py-1.5 text-sm border rounded-md disabled:opacity-50"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          )}
+        </TabsContent>
+      ))}
     </Tabs>
   );
 };
