@@ -43,15 +43,17 @@ const Dashboard = () => {
     closeModal
   } = useConversationQueries(searchQuery, targetSubreddits, timeFilter, sortFilter);
 
-  // Filter conversations based on active tab
-  const filteredConversations = useConversationFilters(conversations, activeTab);
+  // Filter conversations based on active tab and search query
+  const filteredConversations = useConversationFilters(conversations, activeTab, searchQuery);
   
   const handleSubredditChange = (subreddits: string) => {
     setTargetSubreddits(subreddits);
     toast({
       title: "Subreddits updated",
-      description: "Refreshing results with new subreddit selection",
+      description: `Now searching in ${subreddits.split('+').length} subreddits`,
     });
+    // Auto-refresh results
+    setTimeout(() => handleRefresh(), 100);
   };
 
   const handleTimeFilterChange = (time: string) => {
@@ -60,6 +62,8 @@ const Dashboard = () => {
       title: "Time filter updated",
       description: `Showing results from the last ${time}`,
     });
+    // Auto-refresh results
+    setTimeout(() => handleRefresh(), 100);
   };
   
   const handleSortFilterChange = (filter: string) => {
@@ -68,6 +72,8 @@ const Dashboard = () => {
       title: "Sort order updated", 
       description: `Sorting results by ${filter}`,
     });
+    // Auto-refresh results
+    setTimeout(() => handleRefresh(), 100);
   };
   
   const handleRemoveKeyword = (keywordToRemove: string) => {
@@ -80,6 +86,9 @@ const Dashboard = () => {
       title: "Keyword removed",
       description: `Removed "${keywordToRemove}" from tracked keywords`,
     });
+    
+    // Auto-refresh results
+    setTimeout(() => handleRefresh(), 100);
   };
 
   return (
