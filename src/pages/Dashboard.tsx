@@ -70,7 +70,11 @@ const Dashboard = () => {
       const effectiveQuery = searchQuery || 
         BUSINESS_QUERY_TEMPLATES[Math.floor(Math.random() * BUSINESS_QUERY_TEMPLATES.length)];
       
-      return searchRedditPosts(effectiveQuery, targetSubreddits, timeFilter);
+      // Fix: Pass the searchOptions object instead of individual parameters
+      return searchRedditPosts(effectiveQuery, {
+        subreddits: targetSubreddits,
+        timeFilter: timeFilter
+      });
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
