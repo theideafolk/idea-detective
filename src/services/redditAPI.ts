@@ -1,4 +1,3 @@
-import axios from 'axios';
 
 // Define the Reddit API base URL
 const REDDIT_API_BASE_URL = 'https://www.reddit.com';
@@ -23,69 +22,84 @@ const mockBusinessOpportunities = [
     title: 'Looking for a developer to build a SaaS product',
     content: 'I have an idea for a SaaS product and I am looking for a developer to help me build it.',
     url: 'https://www.reddit.com/r/SaaS/comments/1234567/looking_for_a_developer_to_build_a_saas_product/',
+    permalink: '/r/SaaS/comments/1234567/looking_for_a_developer_to_build_a_saas_product/',
     score: 100,
+    upvotes: 100,
     comments: 10,
     subreddit: 'r/SaaS',
     created: 1678886400,
+    time: '3 days ago',
     author: 'johndoe',
     isBusinessOpportunity: true,
-    opportunityScore: 0.8,
+    opportunityScore: 80,
     commentsList: []
   },
   {
     id: '2',
     title: 'Need help with AI implementation for my startup',
     content: 'I am looking for someone to help me implement AI in my startup. I am not sure where to start.',
-    url: 'https://www.reddit.com/r/AI_Agents/comments/1234567/need_help_with_ai_implementation_for_my_startup/',
+    url: 'https://www.reddit.com/r/AI_Agents/comments/2345678/need_help_with_ai_implementation_for_my_startup/',
+    permalink: '/r/AI_Agents/comments/2345678/need_help_with_ai_implementation_for_my_startup/',
     score: 50,
+    upvotes: 50,
     comments: 5,
     subreddit: 'r/AI_Agents',
     created: 1678886400,
+    time: '2 days ago',
     author: 'janedoe',
     isBusinessOpportunity: true,
-    opportunityScore: 0.6,
+    opportunityScore: 60,
     commentsList: []
   },
   {
     id: '3',
     title: 'Seeking a technical co-founder for my new venture',
     content: 'I have a great idea but lack the technical skills to bring it to life. Looking for a co-founder.',
-    url: 'https://www.reddit.com/r/startups/comments/1234567/seeking_a_technical_cofounder_for_my_new_venture/',
+    url: 'https://www.reddit.com/r/startups/comments/3456789/seeking_a_technical_cofounder_for_my_new_venture/',
+    permalink: '/r/startups/comments/3456789/seeking_a_technical_cofounder_for_my_new_venture/',
     score: 75,
+    upvotes: 75,
     comments: 8,
     subreddit: 'r/startups',
     created: 1678886400,
+    time: '1 week ago',
     author: 'techfounder',
     isBusinessOpportunity: true,
-    opportunityScore: 0.7,
+    opportunityScore: 70,
     commentsList: []
   },
   {
     id: '4',
     title: 'Looking for an agency to outsource development work',
     content: 'Our company needs to outsource some development tasks. Seeking recommendations for reliable agencies.',
-    url: 'https://www.reddit.com/r/Entrepreneur/comments/1234567/looking_for_an_agency_to_outsource_development/',
+    url: 'https://www.reddit.com/r/Entrepreneur/comments/4567890/looking_for_an_agency_to_outsource_development/',
+    permalink: '/r/Entrepreneur/comments/4567890/looking_for_an_agency_to_outsource_development/',
     score: 60,
+    upvotes: 60,
     comments: 6,
     subreddit: 'r/Entrepreneur',
     created: 1678886400,
+    time: '5 days ago',
     author: 'outsourcingexpert',
     isBusinessOpportunity: true,
-    opportunityScore: 0.65,
+    opportunityScore: 65,
     commentsList: []
   },
   {
     id: '5',
     title: 'Need help with SaaS development, no coding experience',
     content: 'I have a SaaS idea but no coding skills. Looking for guidance and potential partners to develop it.',
-    url: 'https://www.reddit.com/r/nocode/comments/1234567/need_help_with_saas_development_no_coding/',
+    url: 'https://www.reddit.com/r/nocode/comments/5678901/need_help_with_saas_development_no_coding/',
+    permalink: '/r/nocode/comments/5678901/need_help_with_saas_development_no_coding/',
     score: 40,
+    upvotes: 40,
     comments: 4,
     subreddit: 'r/nocode',
     created: 1678886400,
+    time: '2 weeks ago',
     author: 'nocodefounder',
     isBusinessOpportunity: true,
-    opportunityScore: 0.55,
+    opportunityScore: 55,
     commentsList: []
   }
 ];
@@ -132,6 +146,17 @@ const getRedditAccessToken = async (): Promise<string | null> => {
  */
 export const searchRedditPosts = async (query: string, options?: { subreddits?: string, timeFilter?: string, sortBy?: string }): Promise<RedditPost[]> => {
   console.log("Using mock data while authentication issues are being resolved");
+  
+  // Apply simple filtering to mock data based on the search query
+  if (query && query.trim() !== '') {
+    const searchTerms = query.toLowerCase().split(/\s+OR\s+/);
+    
+    return mockBusinessOpportunities.filter(post => {
+      const postContent = (post.title + " " + post.content).toLowerCase();
+      return searchTerms.some(term => postContent.includes(term.trim()));
+    });
+  }
+  
   return mockBusinessOpportunities;
 };
 

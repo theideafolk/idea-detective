@@ -30,27 +30,6 @@ export const SearchHeader: React.FC<SearchHeaderProps> = ({
   showAdvancedSearch,
   setShowAdvancedSearch,
 }) => {
-  // Create wrapper functions that trigger a search after changing filters
-  const handleSubredditChangeAndSearch = (subreddits: string) => {
-    const result = handleSubredditChange(subreddits);
-    // Trigger a search after changing the subreddit
-    setTimeout(() => {
-      const formEvent = new Event('submit') as unknown as React.FormEvent;
-      handleSearch(formEvent);
-    }, 100);
-    return result;
-  };
-
-  const handleTimeFilterChangeAndSearch = (time: string) => {
-    const result = handleTimeFilterChange(time);
-    // Trigger a search after changing the time filter
-    setTimeout(() => {
-      const formEvent = new Event('submit') as unknown as React.FormEvent;
-      handleSearch(formEvent);
-    }, 100);
-    return result;
-  };
-
   return (
     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
       <CardTitle>Business Opportunities</CardTitle>
@@ -61,12 +40,12 @@ export const SearchHeader: React.FC<SearchHeaderProps> = ({
           handleSearch={handleSearch}
           businessSubreddits={BUSINESS_SUBREDDITS}
           currentSubreddits={targetSubreddits}
-          onSubredditChange={handleSubredditChangeAndSearch}
+          onSubredditChange={handleSubredditChange}
         />
         
         <TimeFilterDropdown 
           timeFilter={timeFilter}
-          handleTimeFilterChange={handleTimeFilterChangeAndSearch}
+          handleTimeFilterChange={handleTimeFilterChange}
         />
         
         <Button 

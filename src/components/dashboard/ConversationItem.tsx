@@ -66,7 +66,7 @@ export const ConversationItem: React.FC<ConversationItemProps> = ({
         <div className="flex flex-col gap-2 ml-4">
           <Button size="sm" onClick={() => onViewConversation(conversation)}>View</Button>
           <a 
-            href={conversation.permalink ? `https://reddit.com${conversation.permalink}` : conversation.url} 
+            href={conversation.url || `https://reddit.com${conversation.permalink}`} 
             target="_blank" 
             rel="noopener noreferrer"
             className="text-xs flex items-center gap-1 hover:underline text-reddit"
