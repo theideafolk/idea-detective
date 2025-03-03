@@ -14,10 +14,27 @@ import { FilterDropdown } from "@/components/dashboard/FilterDropdown";
 import { FilterTabs } from "@/components/dashboard/FilterTabs";
 import { ConversationModal } from "@/components/dashboard/ConversationModal";
 
+// Predefined business queries for better targeting
+const BUSINESS_QUERY_TEMPLATES = [
+  "looking for developer OR seeking developer OR need AI implementation OR hiring developer",
+  "build custom AI OR implement AI solutions OR AI for business OR business automation",
+  "need tech cofounder OR looking for technical partner OR MVP development OR startup tech help",
+  "seeking agency OR looking for agency OR need development team OR outsource development",
+  "SaaS development OR AI integration OR custom software development"
+];
+
 const Dashboard = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedConversation, setSelectedConversation] = useState<RedditPost | null>(null);
   const [activeTab, setActiveTab] = useState("all");
+  const [targetSubreddits, setTargetSubreddits] = useState("SaaS+AI_Agents+artificial+startups+Entrepreneur");
+
+  // Business-focused subreddits
+  const BUSINESS_SUBREDDITS = [
+    "SaaS", "AI_Agents", "artificial", "startups", "Entrepreneur", 
+    "smallbusiness", "business", "technology", "BusinessIntelligence", 
+    "marketing", "socialmedia", "webdev", "programming", "MachineLearning"
+  ];
 
   // Fetch conversations using React Query
   const { 
@@ -27,8 +44,14 @@ const Dashboard = () => {
     refetch,
     isFetching
   } = useQuery({
-    queryKey: ['redditPosts', searchQuery],
-    queryFn: () => searchRedditPosts(searchQuery),
+    queryKey: ['redditPosts', searchQuery, targetSubreddits],
+    queryFn: () => {
+      // If search query is empty, use one of the business templates randomly
+      const effectiveQuery = searchQuery || 
+        BUSINESS_QUERY_TEMPLATES[Math.floor(Math.random() * BUSINESS_QUERY_TEMPLATES.length)];
+      
+      return searchRedditPosts(effectiveQuery, targetSubreddits);
+    },
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
@@ -67,6 +90,11 @@ const Dashboard = () => {
       refetch();
     }
   };
+  
+  const handleSubredditChange = (subreddits: string) => {
+    setTargetSubreddits(subreddits);
+    refetch();
+  };
 
   const handleRefresh = () => {
     toast({
@@ -84,15 +112,29 @@ const Dashboard = () => {
     setSelectedConversation(null);
   };
 
-  // Filter conversations based on the active tab
+  // Filter conversations based on the active tab and business relevance
   const filteredConversations = conversations.filter(convo => {
+    // Business relevance indicators
+    const hasBusinessKeywords = 
+      convo.title.toLowerCase().includes("business") || 
+      convo.title.toLowerCase().includes("startup") ||
+      convo.title.toLowerCase().includes("company") ||
+      convo.title.toLowerCase().includes("development") ||
+      convo.title.toLowerCase().includes("looking for") ||
+      convo.title.toLowerCase().includes("help with") ||
+      convo.title.toLowerCase().includes("need") ||
+      convo.content.toLowerCase().includes("business") ||
+      convo.content.toLowerCase().includes("startup") ||
+      convo.content.toLowerCase().includes("company") ||
+      convo.content.toLowerCase().includes("looking for developer");
+    
     if (activeTab === "potential") {
-      // Posts with more than 20 upvotes could be potential leads
-      return convo.upvotes > 20;
+      // Posts with more than 5 upvotes and business keywords could be potential leads
+      return convo.upvotes > 5 && hasBusinessKeywords;
     }
     if (activeTab === "trending") {
-      // Posts with more than 10 comments could be considered trending
-      return convo.comments > 10;
+      // Posts with more than 10 comments and business keywords could be considered trending
+      return convo.comments > 10 && hasBusinessKeywords;
     }
     return true; // "all" tab shows everything
   });
@@ -120,12 +162,15 @@ const Dashboard = () => {
           <Card className="col-span-3 overflow-hidden border-t-4 border-t-primary/70">
             <CardHeader>
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <CardTitle>Relevant Conversations</CardTitle>
+                <CardTitle>Business Opportunities</CardTitle>
                 <div className="flex flex-col md:flex-row items-start md:items-center gap-2">
                   <SearchBar 
                     searchQuery={searchQuery}
                     setSearchQuery={setSearchQuery}
                     handleSearch={handleSearch}
+                    businessSubreddits={BUSINESS_SUBREDDITS}
+                    currentSubreddits={targetSubreddits}
+                    onSubredditChange={handleSubredditChange}
                   />
                   <FilterDropdown />
                 </div>

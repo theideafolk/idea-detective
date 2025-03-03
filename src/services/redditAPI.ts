@@ -1,3 +1,4 @@
+
 import { toast } from "@/hooks/use-toast";
 
 // Reddit API credentials
@@ -12,7 +13,7 @@ const REDDIT_USERNAME = "DifficultAngle872"; // Updated Reddit username
 const REDDIT_PASSWORD = "Save@2025"; // Updated Reddit password
 
 // Flag to determine if we're using mock data or real API
-// Set to false to use the real API with the updated credentials
+// We're always using real API data now
 const USE_MOCK_DATA = false;
 
 // Flag to enable verbose debug logging for authentication
@@ -158,27 +159,41 @@ const getRedditAccessToken = async (): Promise<string> => {
 };
 
 /**
- * Search Reddit for posts matching a query
+ * Search Reddit for posts matching a query, with optional subreddit filtering
  */
-export const searchRedditPosts = async (query: string): Promise<RedditPost[]> => {
+export const searchRedditPosts = async (query: string, subreddits?: string): Promise<RedditPost[]> => {
   // Don't use mock data - always try to use the real API
   if (false) {
     console.log("Using mock data while authentication issues are being resolved");
     return getMockRedditPosts();
   }
   
-  // If no query provided, use a default subreddit
-  const searchEndpoint = query 
-    ? `https://oauth.reddit.com/search.json?q=${encodeURIComponent(query)}&sort=relevance&limit=10` 
-    : 'https://oauth.reddit.com/r/marketing+socialmedia+SEO+projectmanagement/hot.json?limit=10';
+  // Construct search endpoint based on query and subreddits
+  let searchEndpoint;
+  
+  if (query) {
+    // If both query and subreddits provided, search within those subreddits
+    if (subreddits) {
+      searchEndpoint = `https://oauth.reddit.com/r/${subreddits}/search.json?q=${encodeURIComponent(query)}&restrict_sr=true&sort=relevance&limit=25&t=month`;
+    } else {
+      // Just search all of Reddit with the query
+      searchEndpoint = `https://oauth.reddit.com/search.json?q=${encodeURIComponent(query)}&sort=relevance&limit=25&t=month`;
+    }
+  } else {
+    // If no query provided, get hot posts from specified subreddits or default business subreddits
+    const defaultSubreddits = subreddits || 'SaaS+AI_Agents+artificial+business+Entrepreneur+startups';
+    searchEndpoint = `https://oauth.reddit.com/r/${defaultSubreddits}/hot.json?limit=25`;
+  }
   
   try {
     const token = await getRedditAccessToken();
     console.log("Fetching Reddit posts with token:", token.substring(0, 5) + "...");
+    console.log("Search endpoint:", searchEndpoint);
     
     const response = await fetch(searchEndpoint, {
       headers: {
         Authorization: `Bearer ${token}`,
+        "User-Agent": "web:reddit-dashboard:v1.0.0 (by /u/hello@theideafolk.com)",
       },
     });
 
@@ -190,6 +205,7 @@ export const searchRedditPosts = async (query: string): Promise<RedditPost[]> =>
 
     const data = await response.json();
     
+    // Create RedditPost objects from the API response
     return data.data.children.map((child: any) => {
       const post = child.data;
       return {
@@ -200,7 +216,7 @@ export const searchRedditPosts = async (query: string): Promise<RedditPost[]> =>
         upvotes: post.ups,
         comments: post.num_comments,
         time: formatRedditTime(post.created_utc),
-        content: post.selftext,
+        content: post.selftext || post.url || '',
         permalink: post.permalink,
         commentsList: [], // Comments will be fetched separately
       };
