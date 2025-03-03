@@ -9,12 +9,12 @@ import { toast } from "@/hooks/use-toast";
 // 4. After creation, you'll get client ID and secret
 const REDDIT_CLIENT_ID = "bagzqhnLRwHOiNyGWh7QIw"; // Updated Client ID
 const REDDIT_CLIENT_SECRET = "tq-30wKZR5XzXE9Wi7CRU1nw2GostQ"; // Updated Client Secret
-const REDDIT_USERNAME = "hello@theideafolk.com"; // Reddit username
+const REDDIT_USERNAME = "DifficultAngle872"; // Updated Reddit username
 const REDDIT_PASSWORD = "Save@2025"; // Updated Reddit password
 
 // Flag to determine if we're using mock data or real API
-// Setting to true temporarily to let the app work while debugging authentication
-const USE_MOCK_DATA = true;
+// Set to false to use the real API with the updated credentials
+const USE_MOCK_DATA = false;
 
 // Flag to enable verbose debug logging for authentication
 const DEBUG_AUTH = true;
