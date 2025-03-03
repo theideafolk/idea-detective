@@ -84,6 +84,9 @@
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading font-semibold;
+  }
 }
 
 /* Glass Card Styling */
@@ -111,6 +114,26 @@
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
   z-index: 0;
   pointer-events: none;
+}
+
+/* New modern styling elements */
+.hero-background {
+  background: linear-gradient(to right, rgba(255, 69, 0, 0.05), rgba(255, 69, 0, 0.1));
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-background::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: url('/hero-pattern.svg');
+  background-size: cover;
+  opacity: 0.15;
+  z-index: 0;
 }
 
 /* Reddit-inspired UI components */
@@ -146,7 +169,7 @@
 
 /* Professional styling enhancements */
 .section-title {
-  @apply text-3xl md:text-4xl font-bold mb-6 text-gray-900;
+  @apply text-3xl md:text-4xl font-bold mb-6 text-gray-900 font-heading;
 }
 
 .section-subtitle {
@@ -175,4 +198,38 @@
 
 .quote-mark {
   @apply text-5xl text-reddit-light opacity-20 absolute -top-2 -left-2;
+}
+
+/* Modern card styling */
+.modern-card {
+  @apply bg-white rounded-lg border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300;
+  transform: translateY(0);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.modern-card:hover {
+  transform: translateY(-4px);
+  @apply shadow-lg border-reddit-light/30;
+}
+
+/* Modern button styling */
+.modern-button {
+  @apply rounded-md font-medium relative overflow-hidden;
+  transition: all 0.3s ease;
+}
+
+.modern-button::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  background: linear-gradient(rgba(255,255,255,0.2), rgba(255,255,255,0));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.modern-button:hover::after {
+  opacity: 1;
 }

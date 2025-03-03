@@ -29,7 +29,7 @@ const Landing = () => {
           <nav className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <MessageSquare className="h-6 w-6 text-reddit" />
-              <span className="text-xl font-bold">Reddit Listener</span>
+              <span className="text-xl font-bold font-heading">Reddit Listener</span>
             </div>
             <div className="hidden md:flex items-center gap-6">
               <Link to="/" className="text-foreground font-medium hover:text-reddit transition-colors">Home</Link>
@@ -37,7 +37,7 @@ const Landing = () => {
               <a href="#how-it-works" className="text-foreground font-medium hover:text-reddit transition-colors">How It Works</a>
               <a href="#pricing" className="text-foreground font-medium hover:text-reddit transition-colors">Pricing</a>
               <Link to="/login" className="text-foreground font-medium hover:text-reddit transition-colors">Login</Link>
-              <Button asChild>
+              <Button asChild className="modern-button">
                 <Link to="/register">Get Started</Link>
               </Button>
             </div>
@@ -64,7 +64,7 @@ const Landing = () => {
       </header>
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden">
+      <section className="relative hero-background overflow-hidden">
         <div className="bg-noise"></div>
         <div className="container mx-auto px-4 py-20 lg:py-28 relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
@@ -73,7 +73,7 @@ const Landing = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6 font-heading">
                 Discover <span className="gradient-text">Business Opportunities</span> on Reddit in Real-Time
               </h1>
               <p className="text-xl text-muted-foreground mb-8">
@@ -81,12 +81,12 @@ const Landing = () => {
                 discussions about your services on Reddit.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
-                <Button size="lg" className="font-medium" asChild>
+                <Button size="lg" className="modern-button font-medium" asChild>
                   <Link to="/register">
                     Start Free Trial <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>
-                <Button size="lg" variant="outline" className="border-reddit text-reddit hover:bg-reddit-muted" asChild>
+                <Button size="lg" variant="outline" className="modern-button border-reddit text-reddit hover:bg-reddit-muted" asChild>
                   <Link to="/contact">Schedule Demo</Link>
                 </Button>
               </div>
@@ -101,7 +101,7 @@ const Landing = () => {
               className="glass-card rounded-lg overflow-hidden shadow-xl p-2"
             >
               <img 
-                src="/placeholder.svg" 
+                src="https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80" 
                 alt="Reddit Listener Dashboard" 
                 className="w-full h-auto object-cover rounded-lg"
               />
@@ -152,10 +152,10 @@ const Landing = () => {
                 transition={{ delay: index * 0.1, duration: 0.5 }}
                 viewport={{ once: true }}
               >
-                <Card className="h-full hover:shadow-lg transition-shadow border-transparent hover:border-reddit-light">
+                <Card className="modern-card h-full">
                   <CardContent className="p-6 text-center">
                     <div className="mb-4 flex justify-center">{benefit.icon}</div>
-                    <h3 className="text-xl font-semibold mb-2">{benefit.title}</h3>
+                    <h3 className="text-xl font-semibold mb-2 font-heading">{benefit.title}</h3>
                     <p className="text-muted-foreground">{benefit.description}</p>
                   </CardContent>
                 </Card>
@@ -187,7 +187,7 @@ const Landing = () => {
             <TabsContent value="monitoring" className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="p-4">
-                  <h3 className="text-2xl font-semibold mb-4">Real-time Reddit Monitoring</h3>
+                  <h3 className="text-2xl font-semibold mb-4 font-heading">Real-time Reddit Monitoring</h3>
                   <ul className="space-y-3">
                     <li className="flex items-start gap-2">
                       <ArrowRight className="h-5 w-5 text-reddit flex-shrink-0 mt-0.5" />
@@ -209,7 +209,7 @@ const Landing = () => {
                 </div>
                 <div className="bg-white rounded-lg overflow-hidden shadow-md border border-gray-100">
                   <img 
-                    src="/placeholder.svg" 
+                    src="https://images.unsplash.com/photo-1487058792275-0ad4aaf24ca7?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80" 
                     alt="Real-time monitoring dashboard" 
                     className="w-full h-auto"
                   />
@@ -220,7 +220,7 @@ const Landing = () => {
             <TabsContent value="filtering" className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="p-4">
-                  <h3 className="text-2xl font-semibold mb-4">Smart Filtering & Analytics</h3>
+                  <h3 className="text-2xl font-semibold mb-4 font-heading">Smart Filtering & Analytics</h3>
                   <ul className="space-y-3">
                     <li className="flex items-start gap-2">
                       <ArrowRight className="h-5 w-5 text-reddit flex-shrink-0 mt-0.5" />
@@ -242,7 +242,7 @@ const Landing = () => {
                 </div>
                 <div className="bg-white rounded-lg overflow-hidden shadow-md border border-gray-100">
                   <img 
-                    src="/placeholder.svg" 
+                    src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80" 
                     alt="Filtering and analytics features" 
                     className="w-full h-auto"
                   />
@@ -253,7 +253,7 @@ const Landing = () => {
             <TabsContent value="collaboration" className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="p-4">
-                  <h3 className="text-2xl font-semibold mb-4">Team Collaboration</h3>
+                  <h3 className="text-2xl font-semibold mb-4 font-heading">Team Collaboration</h3>
                   <ul className="space-y-3">
                     <li className="flex items-start gap-2">
                       <ArrowRight className="h-5 w-5 text-reddit flex-shrink-0 mt-0.5" />
@@ -275,7 +275,7 @@ const Landing = () => {
                 </div>
                 <div className="bg-white rounded-lg overflow-hidden shadow-md border border-gray-100">
                   <img 
-                    src="/placeholder.svg" 
+                    src="https://images.unsplash.com/photo-1552664730-d307ca884978?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80" 
                     alt="Team collaboration features" 
                     className="w-full h-auto"
                   />
@@ -328,9 +328,9 @@ const Landing = () => {
                 className="relative text-center"
               >
                 <div className="mb-4 flex justify-center">
-                  <span className="text-6xl font-bold text-reddit/10">{step.step}</span>
+                  <span className="text-6xl font-bold text-reddit/10 font-heading">{step.step}</span>
                 </div>
-                <h3 className="text-xl font-semibold mb-2">{step.title}</h3>
+                <h3 className="text-xl font-semibold mb-2 font-heading">{step.title}</h3>
                 <p className="text-muted-foreground">{step.description}</p>
                 {index < 3 && (
                   <div className="hidden md:block absolute top-10 right-0 w-16 h-1 border-t-2 border-dashed border-reddit/20"></div>
@@ -381,10 +381,10 @@ const Landing = () => {
                 transition={{ delay: index * 0.1, duration: 0.5 }}
                 viewport={{ once: true }}
               >
-                <Card className="h-full hover:shadow-lg transition-shadow border border-gray-100 hover:border-reddit-light">
+                <Card className="modern-card h-full">
                   <CardContent className="p-6 text-center">
                     <div className="mb-4 flex justify-center">{useCase.icon}</div>
-                    <h3 className="text-xl font-semibold mb-2">{useCase.title}</h3>
+                    <h3 className="text-xl font-semibold mb-2 font-heading">{useCase.title}</h3>
                     <p className="text-muted-foreground">{useCase.description}</p>
                   </CardContent>
                 </Card>
@@ -568,11 +568,11 @@ const Landing = () => {
       {/* Final CTA Section */}
       <section className="py-20 bg-gradient-to-r from-reddit/10 to-reddit/5">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">Ready to Discover Business Opportunities on Reddit?</h2>
+          <h2 className="text-3xl md:text-4xl font-bold mb-4 font-heading">Ready to Discover Business Opportunities on Reddit?</h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
             Join hundreds of businesses already finding leads and insights on Reddit
           </p>
-          <Button size="lg" className="px-8" asChild>
+          <Button size="lg" className="px-8 modern-button" asChild>
             <Link to="/register">Start Your Free 14-Day Trial</Link>
           </Button>
           <p className="mt-4 text-muted-foreground">No credit card required. Cancel anytime.</p>
@@ -585,7 +585,7 @@ const Landing = () => {
           <div className="flex flex-col md:flex-row justify-between items-center mb-8">
             <div className="flex items-center gap-2 mb-4 md:mb-0">
               <MessageSquare className="h-6 w-6 text-reddit" />
-              <span className="text-xl font-bold">Reddit Listener</span>
+              <span className="text-xl font-bold font-heading">Reddit Listener</span>
             </div>
             <div className="flex flex-wrap gap-4 md:gap-8 justify-center">
               <Link to="/" className="hover:text-reddit transition-colors">Home</Link>
