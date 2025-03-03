@@ -63,7 +63,7 @@ const Landing = () => {
               discussions about your services on Reddit.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button size="lg" asChild>
+              <Button size="lg" asChild variant="gradient">
                 <Link to="/register">
                   Get Started <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
@@ -77,12 +77,12 @@ const Landing = () => {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.2, duration: 0.5 }}
-            className="glass-card bg-noise rounded-lg overflow-hidden shadow-xl"
+            className="bg-card rounded-lg overflow-hidden shadow-xl p-2"
           >
             <img 
               src="/placeholder.svg" 
               alt="Reddit Listener Dashboard" 
-              className="w-full h-auto object-cover"
+              className="w-full h-auto object-cover rounded-lg"
             />
           </motion.div>
         </div>
