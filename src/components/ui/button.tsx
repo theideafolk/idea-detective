@@ -22,6 +22,12 @@ const buttonVariants = cva(
         // New gradient variant
         gradient: 
           "bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700",
+        // New Google SSO variant
+        google: 
+          "bg-white text-gray-800 border border-gray-300 hover:bg-gray-100 shadow-sm",
+        // New Reddit variant for consistency with the Reddit theme
+        reddit: 
+          "bg-reddit-orange text-white hover:bg-reddit-orange/90",
       },
       size: {
         default: "h-10 px-4 py-2",
