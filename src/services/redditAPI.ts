@@ -13,8 +13,11 @@ const REDDIT_USERNAME = "hello@theideafolk.com"; // Reddit username
 const REDDIT_PASSWORD = "Save@2025"; // Updated Reddit password
 
 // Flag to determine if we're using mock data or real API
-// Setting to false to use the real API data as requested
-const USE_MOCK_DATA = false;
+// Setting to true temporarily to let the app work while debugging authentication
+const USE_MOCK_DATA = true;
+
+// Flag to enable verbose debug logging for authentication
+const DEBUG_AUTH = true;
 
 // Types for our Reddit API data
 export interface RedditPost {
@@ -59,30 +62,67 @@ const getRedditAccessToken = async (): Promise<string> => {
 
   try {
     console.log("Attempting to authenticate with Reddit API");
-    console.log("Using credentials: Username:", REDDIT_USERNAME, "Client ID:", REDDIT_CLIENT_ID.substring(0, 5) + "...");
+    
+    if (DEBUG_AUTH) {
+      console.log("Auth details:", {
+        client_id: REDDIT_CLIENT_ID,
+        username: REDDIT_USERNAME,
+        // Don't log the full password or secret for security reasons
+        password_length: REDDIT_PASSWORD.length,
+        secret_length: REDDIT_CLIENT_SECRET.length
+      });
+    }
     
     const basicAuth = btoa(`${REDDIT_CLIENT_ID}:${REDDIT_CLIENT_SECRET}`);
+    
+    if (DEBUG_AUTH) {
+      console.log("Basic auth header (first 10 chars):", basicAuth.substring(0, 10) + "...");
+    }
+    
+    const body = new URLSearchParams({
+      grant_type: "password",
+      username: REDDIT_USERNAME,
+      password: REDDIT_PASSWORD,
+    });
+    
+    if (DEBUG_AUTH) {
+      console.log("Request body:", body.toString());
+    }
+    
     const response = await fetch("https://www.reddit.com/api/v1/access_token", {
       method: "POST",
       headers: {
         Authorization: `Basic ${basicAuth}`,
         "Content-Type": "application/x-www-form-urlencoded",
+        "User-Agent": "web:reddit-dashboard:v1.0.0 (by /u/hello@theideafolk.com)",
       },
-      body: new URLSearchParams({
-        grant_type: "password",
-        username: REDDIT_USERNAME,
-        password: REDDIT_PASSWORD,
-      }),
+      body: body,
     });
 
-    const responseData = await response.json();
+    // Log the full response for debugging
+    const responseText = await response.text();
+    
+    if (DEBUG_AUTH) {
+      console.log("Response status:", response.status);
+      console.log("Response headers:", Object.fromEntries([...response.headers.entries()]));
+      console.log("Response body:", responseText);
+    }
+    
+    // Parse the response if possible
+    let responseData;
+    try {
+      responseData = JSON.parse(responseText);
+    } catch (e) {
+      console.error("Failed to parse response as JSON:", e);
+      responseData = { error: "Failed to parse response" };
+    }
     
     if (!response.ok || responseData.error) {
       console.error("Reddit authentication failed:", responseData);
       
       // Show more specific error messages
       if (responseData.error === "invalid_grant") {
-        throw new Error("Reddit API authentication error: Username or password is incorrect");
+        throw new Error("Reddit API authentication error: Username or password is incorrect. Please check your credentials.");
       } else if (responseData.error === "unsupported_grant_type") {
         throw new Error("Reddit API authentication error: The grant type is not supported");
       } else if (responseData.error === "invalid_client") {
@@ -92,19 +132,26 @@ const getRedditAccessToken = async (): Promise<string> => {
       }
     }
 
-    const data: RedditAuthResponse = responseData;
-    accessToken = data.access_token;
+    accessToken = responseData.access_token;
     
     // Set token expiry (subtract 5 minutes to be safe)
-    tokenExpiry = Date.now() + (data.expires_in - 300) * 1000;
+    tokenExpiry = Date.now() + (responseData.expires_in - 300) * 1000;
     console.log("Successfully authenticated with Reddit API");
     
     return accessToken;
   } catch (error) {
     console.error("Failed to get Reddit access token:", error);
-    // Only fall back to mock data if the user has enabled it
+    
+    // Show a toast notification with the error
+    toast({
+      title: "Authentication Error",
+      description: error instanceof Error ? error.message : "Failed to authenticate with Reddit API",
+      variant: "destructive",
+    });
+    
+    // Fall back to mock data while we're debugging
     if (USE_MOCK_DATA) {
-      console.log("Falling back to mock token due to authentication error");
+      console.log("Temporarily using mock data due to authentication issues");
       return "mock-token";
     }
     throw error;
@@ -115,9 +162,9 @@ const getRedditAccessToken = async (): Promise<string> => {
  * Search Reddit for posts matching a query
  */
 export const searchRedditPosts = async (query: string): Promise<RedditPost[]> => {
-  // Only use mock data if specifically configured to do so
+  // Use mock data temporarily while debugging auth issues
   if (USE_MOCK_DATA) {
-    console.log("Using mock data for Reddit posts as configured");
+    console.log("Using mock data while authentication issues are being resolved");
     return getMockRedditPosts();
   }
   
@@ -180,9 +227,9 @@ export const searchRedditPosts = async (query: string): Promise<RedditPost[]> =>
  * Get comments for a specific Reddit post
  */
 export const getRedditPostComments = async (postId: string, subreddit: string): Promise<RedditComment[]> => {
-  // Only use mock data if specifically configured to do so
+  // Use mock data temporarily while debugging auth issues
   if (USE_MOCK_DATA) {
-    console.log("Using mock data for Reddit comments as configured");
+    console.log("Using mock data for comments while authentication issues are being resolved");
     const mockPosts = getMockRedditPosts();
     const post = mockPosts.find(p => p.id === postId);
     return post?.commentsList || [];
