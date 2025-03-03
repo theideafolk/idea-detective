@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { Search, Globe, Sparkles } from "lucide-react";
+import { Search, Globe, Sparkles, Edit3 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
@@ -34,9 +34,16 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   const [businessDescription, setBusinessDescription] = useState("");
   const [suggestedKeywords, setSuggestedKeywords] = useState<string[]>([]);
   const [isResultModalOpen, setIsResultModalOpen] = useState(false);
+  const [isDescriptionModalOpen, setIsDescriptionModalOpen] = useState(false);
+  const [userDescription, setUserDescription] = useState("");
+  const [isProcessingDescription, setIsProcessingDescription] = useState(false);
 
   const openWebsiteModal = () => {
     setIsWebsiteModalOpen(true);
+  };
+
+  const openDescriptionModal = () => {
+    setIsDescriptionModalOpen(true);
   };
 
   const analyzeWebsite = async (e: React.FormEvent) => {
@@ -93,6 +100,93 @@ export const SearchBar: React.FC<SearchBarProps> = ({
     }
   };
 
+  const processDescription = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!userDescription || userDescription.trim().length < 10) {
+      toast({
+        title: "Error",
+        description: "Please enter a more detailed description (at least 10 characters)",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsProcessingDescription(true);
+    
+    try {
+      // Simulate AI processing of the description
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Extract key concepts from the description to form keywords
+      // In a real implementation, this would use an AI service
+      const words = userDescription.toLowerCase().split(/\s+/);
+      const commonWords = ["a", "an", "the", "and", "or", "but", "in", "on", "at", "to", "for", "is", "are", "with", "as", "of"];
+      
+      // Simple keyword extraction - extract unique meaningful words and phrases
+      const extractedKeywords = new Set<string>();
+      
+      // Look for two-word phrases first
+      for (let i = 0; i < words.length - 1; i++) {
+        const word1 = words[i].replace(/[^\w]/g, '');
+        const word2 = words[i + 1].replace(/[^\w]/g, '');
+        
+        if (word1.length > 3 && word2.length > 3 && 
+            !commonWords.includes(word1) && !commonWords.includes(word2)) {
+          extractedKeywords.add(`${word1} ${word2}`);
+        }
+      }
+      
+      // Then add single important words
+      words.forEach(word => {
+        const cleanWord = word.replace(/[^\w]/g, '');
+        if (cleanWord.length > 4 && !commonWords.includes(cleanWord)) {
+          extractedKeywords.add(cleanWord);
+        }
+      });
+      
+      // Add some industry-specific terms based on analysis
+      if (userDescription.toLowerCase().includes("market") || userDescription.toLowerCase().includes("brand")) {
+        extractedKeywords.add("marketing strategy");
+      }
+      
+      if (userDescription.toLowerCase().includes("tech") || userDescription.toLowerCase().includes("software")) {
+        extractedKeywords.add("technology solutions");
+      }
+      
+      if (userDescription.toLowerCase().includes("consult") || userDescription.toLowerCase().includes("advice")) {
+        extractedKeywords.add("business consulting");
+      }
+      
+      // Convert Set to Array for state
+      const generatedKeywords = Array.from(extractedKeywords).slice(0, 5); // Limit to 5 keywords
+      
+      // If we somehow got no keywords, add a default
+      if (generatedKeywords.length === 0) {
+        generatedKeywords.push("business advice", "professional services");
+      }
+      
+      setBusinessDescription(userDescription);
+      setSuggestedKeywords(generatedKeywords);
+      
+      setIsDescriptionModalOpen(false);
+      setIsResultModalOpen(true);
+      
+      toast({
+        title: "Description Processed",
+        description: "We've generated relevant keywords from your description",
+      });
+    } catch (error) {
+      toast({
+        title: "Processing Failed",
+        description: "Could not process your description. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsProcessingDescription(false);
+    }
+  };
+
   const applyKeywords = () => {
     setSearchQuery(suggestedKeywords.join(" OR "));
     setIsResultModalOpen(false);
@@ -127,6 +221,16 @@ export const SearchBar: React.FC<SearchBarProps> = ({
             title="Import from Website"
           >
             <Globe className="h-4 w-4 text-primary" />
+          </Button>
+          <Button 
+            type="button" 
+            variant="outline" 
+            size="icon" 
+            className="ml-2" 
+            onClick={openDescriptionModal}
+            title="Search by Description"
+          >
+            <Edit3 className="h-4 w-4 text-primary" />
           </Button>
         </form>
       </div>
@@ -177,13 +281,63 @@ export const SearchBar: React.FC<SearchBarProps> = ({
         </DialogContent>
       </Dialog>
 
+      {/* Description Input Modal */}
+      <Dialog open={isDescriptionModalOpen} onOpenChange={setIsDescriptionModalOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Describe Your Business Needs</DialogTitle>
+            <DialogDescription>
+              Enter a detailed description of your business and we'll use AI to find relevant Reddit conversations.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={processDescription}>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-1 gap-4">
+                <Label htmlFor="business-description-input">
+                  Business Description
+                </Label>
+                <Textarea
+                  id="business-description-input"
+                  placeholder="Describe your business, target audience, challenges you're facing, or specific topics you're interested in..."
+                  value={userDescription}
+                  onChange={(e) => setUserDescription(e.target.value)}
+                  rows={6}
+                  className="resize-none"
+                />
+                <p className="text-xs text-muted-foreground">
+                  For best results, be specific about your industry, products/services, and the kind of insights you're looking for.
+                </p>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setIsDescriptionModalOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isProcessingDescription}>
+                {isProcessingDescription ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="mr-2 h-4 w-4" />
+                    Generate Keywords
+                  </>
+                )}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
       {/* Results Modal */}
       <Dialog open={isResultModalOpen} onOpenChange={setIsResultModalOpen}>
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
-            <DialogTitle>Website Analysis Results</DialogTitle>
+            <DialogTitle>Generated Search Terms</DialogTitle>
             <DialogDescription>
-              We've analyzed your website and extracted the following information. You can edit or customize before searching.
+              We've analyzed your input and extracted the following information. You can edit or customize before searching.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
