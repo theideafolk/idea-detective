@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
 import { searchRedditPosts, getRedditPostComments, type RedditPost } from "@/services/redditAPI";
 import { useQuery } from "@tanstack/react-query";
+import { PanelRightOpen } from "lucide-react";
 
 // Import the refactored components
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
@@ -13,6 +14,8 @@ import { SearchBar } from "@/components/dashboard/SearchBar";
 import { FilterDropdown } from "@/components/dashboard/FilterDropdown";
 import { FilterTabs } from "@/components/dashboard/FilterTabs";
 import { ConversationModal } from "@/components/dashboard/ConversationModal";
+import { Button } from "@/components/ui/button";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 // Predefined business queries targeting potential clients looking for AI/tech services
 const BUSINESS_QUERY_TEMPLATES = [
@@ -35,6 +38,13 @@ const Dashboard = () => {
   const [selectedConversation, setSelectedConversation] = useState<RedditPost | null>(null);
   const [activeTab, setActiveTab] = useState("opportunities"); // Default to opportunities tab
   const [targetSubreddits, setTargetSubreddits] = useState("SaaS+AI_Agents+artificial+startups+Entrepreneur+OpenAI+boltnewbuilders+smallbusiness");
+  const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
+  
+  // Extract active keywords for analytics card
+  const activeKeywords = searchQuery.split(/\s+OR\s+/).filter(Boolean);
+  
+  // Extract active subreddits for analytics card
+  const activeSubreddits = targetSubreddits.split('+');
 
   // Fetch conversations using React Query
   const { 
@@ -183,6 +193,8 @@ const Dashboard = () => {
           conversationCount={conversations.length}
           isRefetching={isFetching}
           onRefresh={handleRefresh}
+          activeKeywords={activeKeywords}
+          activeSubreddits={activeSubreddits}
         />
 
         <div className="grid grid-cols-1 gap-4">
@@ -199,55 +211,69 @@ const Dashboard = () => {
                     currentSubreddits={targetSubreddits}
                     onSubredditChange={handleSubredditChange}
                   />
-                  <FilterDropdown />
+                  <Button 
+                    variant="outline"
+                    onClick={() => setShowAdvancedSearch(!showAdvancedSearch)}
+                    title="Toggle Advanced Search"
+                  >
+                    <PanelRightOpen className="h-4 w-4" />
+                    <span className="ml-2 hidden md:inline">Advanced</span>
+                  </Button>
                 </div>
               </div>
             </CardHeader>
             <CardContent>
-              <div className="mb-4">
-                <div className="inline-flex h-10 items-center justify-center rounded-md bg-muted p-1 text-muted-foreground">
-                  <button
-                    className={`inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
-                      activeTab === "opportunities"
-                        ? "bg-background text-foreground shadow-sm"
-                        : "hover:bg-background/50"
-                    }`}
-                    onClick={() => setActiveTab("opportunities")}
-                  >
-                    Business Opportunities
-                  </button>
-                  <button
-                    className={`inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
-                      activeTab === "potential"
-                        ? "bg-background text-foreground shadow-sm"
-                        : "hover:bg-background/50"
-                    }`}
-                    onClick={() => setActiveTab("potential")}
-                  >
-                    Potential Leads
-                  </button>
-                  <button
-                    className={`inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
-                      activeTab === "ai"
-                        ? "bg-background text-foreground shadow-sm"
-                        : "hover:bg-background/50"
-                    }`}
-                    onClick={() => setActiveTab("ai")}
-                  >
-                    AI Discussion
-                  </button>
-                  <button
-                    className={`inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
-                      activeTab === "all"
-                        ? "bg-background text-foreground shadow-sm"
-                        : "hover:bg-background/50"
-                    }`}
-                    onClick={() => setActiveTab("all")}
-                  >
-                    All Posts
-                  </button>
-                </div>
-              </div>
+              <Collapsible open={showAdvancedSearch} onOpenChange={setShowAdvancedSearch} className="mb-4">
+                <CollapsibleContent>
+                  <div className="p-4 bg-muted/40 rounded-md mb-4">
+                    <h3 className="text-sm font-medium mb-2">Filter by Category</h3>
+                    <div className="inline-flex h-10 items-center justify-center rounded-md bg-muted p-1 text-muted-foreground">
+                      <button
+                        className={`inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+                          activeTab === "opportunities"
+                            ? "bg-background text-foreground shadow-sm"
+                            : "hover:bg-background/50"
+                        }`}
+                        onClick={() => setActiveTab("opportunities")}
+                      >
+                        Business Opportunities
+                      </button>
+                      <button
+                        className={`inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+                          activeTab === "potential"
+                            ? "bg-background text-foreground shadow-sm"
+                            : "hover:bg-background/50"
+                        }`}
+                        onClick={() => setActiveTab("potential")}
+                      >
+                        Potential Leads
+                      </button>
+                      <button
+                        className={`inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+                          activeTab === "ai"
+                            ? "bg-background text-foreground shadow-sm"
+                            : "hover:bg-background/50"
+                        }`}
+                        onClick={() => setActiveTab("ai")}
+                      >
+                        AI Discussion
+                      </button>
+                      <button
+                        className={`inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+                          activeTab === "all"
+                            ? "bg-background text-foreground shadow-sm"
+                            : "hover:bg-background/50"
+                        }`}
+                        onClick={() => setActiveTab("all")}
+                      >
+                        All Posts
+                      </button>
+                    </div>
+                    <FilterDropdown />
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
+              
               <FilterTabs 
                 activeTab={activeTab}
                 setActiveTab={setActiveTab}

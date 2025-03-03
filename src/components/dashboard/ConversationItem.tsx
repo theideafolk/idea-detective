@@ -18,28 +18,6 @@ export const ConversationItem: React.FC<ConversationItemProps> = ({
   const isHighValueOpportunity = conversation.isBusinessOpportunity && (conversation.opportunityScore || 0) > 20;
   const isMediumValueOpportunity = conversation.isBusinessOpportunity && (conversation.opportunityScore || 0) > 10;
   
-  // Business categories
-  const titleAndContent = (conversation.title + " " + conversation.content).toLowerCase();
-  
-  const isAIRelated = 
-    titleAndContent.includes("ai") || 
-    titleAndContent.includes("artificial intelligence") ||
-    titleAndContent.includes("machine learning");
-  
-  const isDevelopmentRelated = 
-    titleAndContent.includes("development") || 
-    titleAndContent.includes("developer") ||
-    titleAndContent.includes("software") ||
-    titleAndContent.includes("application") ||
-    titleAndContent.includes("app");
-  
-  const isAgencyRelated = 
-    titleAndContent.includes("agency") || 
-    titleAndContent.includes("consultant") ||
-    titleAndContent.includes("service provider") ||
-    titleAndContent.includes("looking for help") ||
-    titleAndContent.includes("outsource");
-  
   return (
     <div className={`border rounded-lg p-4 transition-all hover:shadow-md ${
       isHighValueOpportunity ? "border-l-4 border-l-green-500" : 
@@ -55,29 +33,9 @@ export const ConversationItem: React.FC<ConversationItemProps> = ({
               {conversation.author} • {conversation.time}
             </span>
             
-            {/* Opportunity badges */}
+            {/* Opportunity badges - simplified */}
             {isHighValueOpportunity && (
-              <Badge className="bg-green-500 hover:bg-green-600">Hot Lead</Badge>
-            )}
-            {!isHighValueOpportunity && isMediumValueOpportunity && (
-              <Badge className="bg-yellow-500 hover:bg-yellow-600">Potential</Badge>
-            )}
-            
-            {/* Category badges */}
-            {isAIRelated && (
-              <Badge variant="outline" className="bg-blue-100 text-blue-800 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400">
-                AI
-              </Badge>
-            )}
-            {isDevelopmentRelated && (
-              <Badge variant="outline" className="bg-purple-100 text-purple-800 hover:bg-purple-200 dark:bg-purple-900/30 dark:text-purple-400">
-                Development
-              </Badge>
-            )}
-            {isAgencyRelated && (
-              <Badge variant="outline" className="bg-amber-100 text-amber-800 hover:bg-amber-200 dark:bg-amber-900/30 dark:text-amber-400">
-                Agency
-              </Badge>
+              <Badge className="bg-green-500 hover:bg-green-600">Business Lead</Badge>
             )}
           </div>
           

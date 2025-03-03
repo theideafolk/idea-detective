@@ -14,13 +14,27 @@ interface AnalyticsCardsProps {
   conversationCount: number;
   isRefetching: boolean;
   onRefresh: () => void;
+  activeKeywords?: string[];
+  activeSubreddits?: string[];
 }
 
 export const AnalyticsCards: React.FC<AnalyticsCardsProps> = ({
   conversationCount,
   isRefetching,
   onRefresh,
+  activeKeywords = [],
+  activeSubreddits = [],
 }) => {
+  // Extract keywords from search query if available
+  const displayKeywords = activeKeywords.length > 0 
+    ? activeKeywords 
+    : ["AI", "development", "custom", "marketing", "tools"];
+  
+  // Format subreddits for display
+  const displaySubreddits = activeSubreddits.length > 0
+    ? activeSubreddits.map(s => `r/${s}`)
+    : ["r/SaaS", "r/AI_Agents", "r/artificial", "r/startups", "r/Entrepreneur"];
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
       <Card className="overflow-hidden group hover:shadow-lg transition-all duration-300">
@@ -31,14 +45,16 @@ export const AnalyticsCards: React.FC<AnalyticsCardsProps> = ({
           <TrendingUp className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">12</div>
+          <div className="text-2xl font-bold">{displayKeywords.length}</div>
           <p className="text-xs text-muted-foreground">
-            +2 added this week
+            {isRefetching ? 'Updating now...' : 'Currently tracking'}
           </p>
           <div className="mt-3 flex flex-wrap gap-1">
-            <Badge variant="outline" className="bg-blue-50 dark:bg-blue-950/40">SEO</Badge>
-            <Badge variant="outline" className="bg-blue-50 dark:bg-blue-950/40">marketing</Badge>
-            <Badge variant="outline" className="bg-blue-50 dark:bg-blue-950/40">tools</Badge>
+            {displayKeywords.slice(0, 5).map((keyword, index) => (
+              <Badge key={index} variant="outline" className="bg-blue-50 dark:bg-blue-950/40">
+                {keyword}
+              </Badge>
+            ))}
           </div>
         </CardContent>
       </Card>
@@ -51,14 +67,16 @@ export const AnalyticsCards: React.FC<AnalyticsCardsProps> = ({
           <Eye className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">8</div>
+          <div className="text-2xl font-bold">{displaySubreddits.length}</div>
           <p className="text-xs text-muted-foreground">
-            Across 3 categories
+            {isRefetching ? 'Updating now...' : 'Currently monitoring'}
           </p>
           <div className="mt-3 flex flex-wrap gap-1">
-            <Badge variant="outline" className="bg-purple-50 dark:bg-purple-950/40">r/marketing</Badge>
-            <Badge variant="outline" className="bg-purple-50 dark:bg-purple-950/40">r/SEO</Badge>
-            <Badge variant="outline" className="bg-purple-50 dark:bg-purple-950/40">r/socialmedia</Badge>
+            {displaySubreddits.slice(0, 5).map((subreddit, index) => (
+              <Badge key={index} variant="outline" className="bg-purple-50 dark:bg-purple-950/40">
+                {subreddit}
+              </Badge>
+            ))}
           </div>
         </CardContent>
       </Card>
