@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -48,6 +49,7 @@ const Dashboard = () => {
   const [targetSubreddits, setTargetSubreddits] = useState("SaaS+AI_Agents+artificial+startups+Entrepreneur+OpenAI+boltnewbuilders+smallbusiness");
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
   const [timeFilter, setTimeFilter] = useState("month"); // Default to month
+  const [sortFilter, setSortFilter] = useState("relevance"); // Default sort order
   
   // Extract active keywords for analytics card
   const activeKeywords = searchQuery.split(/\s+OR\s+/).filter(Boolean);
@@ -63,7 +65,7 @@ const Dashboard = () => {
     refetch,
     isFetching
   } = useQuery({
-    queryKey: ['redditPosts', searchQuery, targetSubreddits, timeFilter],
+    queryKey: ['redditPosts', searchQuery, targetSubreddits, timeFilter, sortFilter],
     queryFn: () => {
       // If search query is empty, use one of the business templates randomly
       const effectiveQuery = searchQuery || 
@@ -72,7 +74,8 @@ const Dashboard = () => {
       // Updated: Properly passing options as an object
       return searchRedditPosts(effectiveQuery, {
         subreddits: targetSubreddits,
-        timeFilter: timeFilter
+        timeFilter: timeFilter,
+        sortBy: sortFilter
       });
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
@@ -116,6 +119,10 @@ const Dashboard = () => {
   
   const handleSubredditChange = (subreddits: string) => {
     setTargetSubreddits(subreddits);
+    toast({
+      title: "Subreddits updated",
+      description: "Refreshing results with new subreddit selection",
+    });
     refetch();
   };
 
@@ -124,6 +131,15 @@ const Dashboard = () => {
     toast({
       title: "Time filter updated",
       description: `Showing results from the last ${time}`,
+    });
+    refetch();
+  };
+  
+  const handleSortFilterChange = (filter: string) => {
+    setSortFilter(filter);
+    toast({
+      title: "Sort order updated", 
+      description: `Sorting results by ${filter}`,
     });
     refetch();
   };
@@ -350,7 +366,12 @@ const Dashboard = () => {
                         All Posts
                       </button>
                     </div>
-                    <FilterDropdown />
+                    <FilterDropdown 
+                      onFilterChange={handleSortFilterChange}
+                      onTimeFilterChange={handleTimeFilterChange}
+                      currentFilter={sortFilter}
+                      currentTimeFilter={timeFilter}
+                    />
                   </div>
                 </CollapsibleContent>
               </Collapsible>
