@@ -1,3 +1,4 @@
+
 import { toast } from "@/hooks/use-toast";
 
 // Reddit API credentials
@@ -6,10 +7,10 @@ import { toast } from "@/hooks/use-toast";
 // 2. Create a new app (select "script" type)
 // 3. Fill in the required information
 // 4. After creation, you'll get client ID and secret
-const REDDIT_CLIENT_ID = "g9xgMKksLNWm_8KnQH054Q"; // Replace with your actual Client ID
-const REDDIT_CLIENT_SECRET = "4PFWeZFNXhiW3Td0A52L92i7MvDUyg"; // Replace with your actual Client Secret
-const REDDIT_USERNAME = "hello@theideafolk.com"; // Replace with your Reddit username
-const REDDIT_PASSWORD = "Reddit@2025"; // Replace with your Reddit password
+const REDDIT_CLIENT_ID = "bagzqhnLRwHOiNyGWh7QIw"; // Updated Client ID
+const REDDIT_CLIENT_SECRET = "tq-30wKZR5XzXE9Wi7CRU1nw2GostQ"; // Updated Client Secret
+const REDDIT_USERNAME = "hello@theideafolk.com"; // Reddit username
+const REDDIT_PASSWORD = "Save@2025"; // Updated Reddit password
 
 // Flag to determine if we're using mock data or real API
 // Setting to false to use the real API data as requested
