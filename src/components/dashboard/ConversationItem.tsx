@@ -25,8 +25,8 @@ export const ConversationItem: React.FC<ConversationItemProps> = ({
     }`}>
       <div className="flex justify-between items-start">
         <div className="space-y-2 flex-1">
-          <div className="flex items-center gap-2">
-            <Badge variant="outline" className="font-normal text-xs">
+          <div className="flex items-center gap-2 flex-wrap">
+            <Badge variant="outline" className="font-normal text-xs bg-reddit-muted/50 text-reddit border-reddit-light">
               {conversation.subreddit}
             </Badge>
             <span className="text-sm text-muted-foreground">

@@ -23,7 +23,7 @@
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
  
-    --accent: 16 70% 96%; /* Very light orange accent */
+    --accent: 16 80% 96%; /* Very light orange accent */
     --accent-foreground: 222.2 47.4% 11.2%;
  
     --destructive: 0 84.2% 60.2%;
@@ -88,7 +88,7 @@
 
 /* Glass Card Styling */
 .glass-card {
-  background: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(8px);
   border: 1px solid rgba(255, 255, 255, 0.3);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
@@ -96,7 +96,7 @@
 
 /* Button Styling */
 .primary-button {
-  @apply bg-primary text-primary-foreground hover:bg-reddit-hover;
+  @apply bg-primary text-primary-foreground hover:bg-reddit-hover font-medium;
   transition: all 0.2s ease;
 }
 
@@ -115,12 +115,16 @@
 
 /* Reddit-inspired UI components */
 .reddit-card {
-  @apply border border-gray-200 rounded-md hover:border-reddit-light transition-all duration-200;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  @apply border border-gray-200 rounded-md hover:border-reddit-light transition-all duration-200 bg-white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.reddit-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .reddit-header {
-  @apply bg-gradient-to-r from-reddit to-reddit-dark text-white;
+  @apply bg-gradient-to-r from-reddit to-reddit-dark text-white font-medium;
 }
 
 .upvote-icon {
@@ -138,4 +142,37 @@
 
 .reddit-badge-outline {
   @apply bg-transparent text-reddit border border-reddit text-xs font-medium px-2 py-0.5 rounded-full;
+}
+
+/* Professional styling enhancements */
+.section-title {
+  @apply text-3xl md:text-4xl font-bold mb-6 text-gray-900;
+}
+
+.section-subtitle {
+  @apply text-xl text-muted-foreground max-w-2xl mx-auto mb-12;
+}
+
+.feature-card {
+  @apply bg-white rounded-lg p-6 transition-all duration-300 hover:shadow-lg border border-transparent hover:border-reddit-light;
+}
+
+.feature-icon {
+  @apply w-12 h-12 text-reddit mb-4;
+}
+
+.gradient-text {
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-reddit to-reddit-dark;
+}
+
+.gradient-bg {
+  @apply bg-gradient-to-r from-reddit-muted to-white;
+}
+
+.testimonial-card {
+  @apply p-6 rounded-lg bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow;
+}
+
+.quote-mark {
+  @apply text-5xl text-reddit-light opacity-20 absolute -top-2 -left-2;
 }
