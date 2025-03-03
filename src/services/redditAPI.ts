@@ -104,6 +104,10 @@ export type RedditPost = {
   isBusinessOpportunity: boolean;
   opportunityScore: number;
   commentsList: RedditComment[];
+  // Add the missing properties
+  permalink?: string;
+  upvotes?: number;
+  time?: string;
 };
 
 // Define the Reddit comment type
@@ -113,6 +117,9 @@ export type RedditComment = {
   body: string;
   score: number;
   created: number;
+  // Add missing property
+  text?: string;
+  upvotes?: number;
 };
 
 /**
@@ -241,6 +248,14 @@ export const searchRedditPosts = async (query: string, options?: { subreddits?: 
       if (hasBusinessKeywords) opportunityScore += 7;
       if (hasTechKeywords) opportunityScore += 3;
       
+      // Calculate time string from created timestamp
+      const createdDate = new Date(postData.created_utc * 1000);
+      const timeString = createdDate.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      });
+      
       return {
         id: postData.id,
         title: postData.title,
@@ -253,7 +268,11 @@ export const searchRedditPosts = async (query: string, options?: { subreddits?: 
         author: postData.author,
         isBusinessOpportunity: hasClientKeywords && (hasBusinessKeywords || hasTechKeywords),
         opportunityScore: opportunityScore,
-        commentsList: []
+        commentsList: [],
+        // Add the new properties
+        permalink: postData.permalink,
+        upvotes: postData.score,
+        time: timeString
       };
     });
     
@@ -299,6 +318,9 @@ export const getRedditPostComments = async (postId: string, subreddit: string): 
             body: commentData.body,
             score: commentData.score,
             created: commentData.created_utc,
+            // Add the missing properties
+            text: commentData.body,
+            upvotes: commentData.score
           });
         }
       });

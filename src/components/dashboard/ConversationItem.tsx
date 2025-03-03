@@ -18,6 +18,9 @@ export const ConversationItem: React.FC<ConversationItemProps> = ({
   const isHighValueOpportunity = conversation.isBusinessOpportunity && (conversation.opportunityScore || 0) > 20;
   const isMediumValueOpportunity = conversation.isBusinessOpportunity && (conversation.opportunityScore || 0) > 10;
   
+  // Format date if time property is not available
+  const displayTime = conversation.time || new Date(conversation.created * 1000).toLocaleDateString();
+  
   return (
     <div className={`reddit-card p-4 transition-all hover:shadow-md ${
       isHighValueOpportunity ? "border-l-4 border-l-reddit" : 
@@ -30,7 +33,7 @@ export const ConversationItem: React.FC<ConversationItemProps> = ({
               {conversation.subreddit}
             </Badge>
             <span className="text-sm text-muted-foreground">
-              {conversation.author} • {conversation.time}
+              {conversation.author} • {displayTime}
             </span>
             
             {/* Opportunity badges - simplified */}
@@ -45,7 +48,7 @@ export const ConversationItem: React.FC<ConversationItemProps> = ({
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
             <span className="flex items-center gap-1">
               <ArrowUpRight className="h-4 w-4 upvote-icon" />
-              {conversation.upvotes}
+              {conversation.upvotes || conversation.score}
             </span>
             <span className="flex items-center gap-1">
               <MessageCircle className="h-4 w-4 comment-icon" />
@@ -63,7 +66,7 @@ export const ConversationItem: React.FC<ConversationItemProps> = ({
         <div className="flex flex-col gap-2 ml-4">
           <Button size="sm" onClick={() => onViewConversation(conversation)}>View</Button>
           <a 
-            href={`https://reddit.com${conversation.permalink}`} 
+            href={conversation.permalink ? `https://reddit.com${conversation.permalink}` : conversation.url} 
             target="_blank" 
             rel="noopener noreferrer"
             className="text-xs flex items-center gap-1 hover:underline text-reddit"
