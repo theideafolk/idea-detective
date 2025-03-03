@@ -14,27 +14,27 @@ import { FilterDropdown } from "@/components/dashboard/FilterDropdown";
 import { FilterTabs } from "@/components/dashboard/FilterTabs";
 import { ConversationModal } from "@/components/dashboard/ConversationModal";
 
-// Predefined business queries for better targeting
+// Predefined business queries targeting potential clients looking for AI/tech services
 const BUSINESS_QUERY_TEMPLATES = [
-  "looking for developer OR seeking developer OR need AI implementation OR hiring developer",
-  "build custom AI OR implement AI solutions OR AI for business OR business automation",
-  "need tech cofounder OR looking for technical partner OR MVP development OR startup tech help",
-  "seeking agency OR looking for agency OR need development team OR outsource development",
-  "SaaS development OR AI integration OR custom software development"
+  "looking for developer OR seeking developer OR need AI implementation OR hiring developer OR tech partner",
+  "build custom AI OR implement AI solutions OR AI for business OR business automation OR custom software",
+  "need tech cofounder OR looking for technical partner OR MVP development OR startup tech help OR bolt.new",
+  "seeking agency OR looking for agency OR need development team OR outsource development OR custom app",
+  "SaaS development OR AI integration OR custom software development OR automation solution OR no coding"
+];
+
+// Business subreddits targeting potential clients
+const BUSINESS_SUBREDDITS = [
+  "SaaS", "AI_Agents", "artificial", "startups", "Entrepreneur", 
+  "smallbusiness", "business", "technology", "OpenAI", "boltnewbuilders",
+  "webdev", "programming", "MachineLearning", "nocode", "lowcode"
 ];
 
 const Dashboard = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedConversation, setSelectedConversation] = useState<RedditPost | null>(null);
-  const [activeTab, setActiveTab] = useState("all");
-  const [targetSubreddits, setTargetSubreddits] = useState("SaaS+AI_Agents+artificial+startups+Entrepreneur");
-
-  // Business-focused subreddits
-  const BUSINESS_SUBREDDITS = [
-    "SaaS", "AI_Agents", "artificial", "startups", "Entrepreneur", 
-    "smallbusiness", "business", "technology", "BusinessIntelligence", 
-    "marketing", "socialmedia", "webdev", "programming", "MachineLearning"
-  ];
+  const [activeTab, setActiveTab] = useState("opportunities"); // Default to opportunities tab
+  const [targetSubreddits, setTargetSubreddits] = useState("SaaS+AI_Agents+artificial+startups+Entrepreneur+OpenAI+boltnewbuilders+smallbusiness");
 
   // Fetch conversations using React Query
   const { 
@@ -99,7 +99,7 @@ const Dashboard = () => {
   const handleRefresh = () => {
     toast({
       title: "Refreshing data",
-      description: "Getting the latest conversations from Reddit",
+      description: "Getting the latest business opportunities from Reddit",
     });
     refetch();
   };
@@ -114,28 +114,55 @@ const Dashboard = () => {
 
   // Filter conversations based on the active tab and business relevance
   const filteredConversations = conversations.filter(convo => {
-    // Business relevance indicators
+    // Business opportunity indicators - now we have explicit flags from the API
+    const isOpportunity = convo.isBusinessOpportunity || false;
+    const opportunityScore = convo.opportunityScore || 0;
+    
+    // Additional text-based filtering for extra precision
+    const titleAndContent = (convo.title + " " + convo.content).toLowerCase();
+    
+    const hasClientKeywords = 
+      titleAndContent.includes("looking for") || 
+      titleAndContent.includes("need help") ||
+      titleAndContent.includes("seeking") ||
+      titleAndContent.includes("want to build") ||
+      titleAndContent.includes("recommendations") ||
+      titleAndContent.includes("advice on");
+    
     const hasBusinessKeywords = 
-      convo.title.toLowerCase().includes("business") || 
-      convo.title.toLowerCase().includes("startup") ||
-      convo.title.toLowerCase().includes("company") ||
-      convo.title.toLowerCase().includes("development") ||
-      convo.title.toLowerCase().includes("looking for") ||
-      convo.title.toLowerCase().includes("help with") ||
-      convo.title.toLowerCase().includes("need") ||
-      convo.content.toLowerCase().includes("business") ||
-      convo.content.toLowerCase().includes("startup") ||
-      convo.content.toLowerCase().includes("company") ||
-      convo.content.toLowerCase().includes("looking for developer");
+      titleAndContent.includes("business") || 
+      titleAndContent.includes("startup") ||
+      titleAndContent.includes("company") ||
+      titleAndContent.includes("budget") ||
+      titleAndContent.includes("hire") ||
+      titleAndContent.includes("investment");
+    
+    const hasTechKeywords = 
+      titleAndContent.includes("developer") || 
+      titleAndContent.includes("development") ||
+      titleAndContent.includes("ai") ||
+      titleAndContent.includes("custom") ||
+      titleAndContent.includes("automation") ||
+      titleAndContent.includes("software");
+    
+    if (activeTab === "opportunities") {
+      // High-quality business opportunities 
+      return isOpportunity && opportunityScore > 15;
+    }
     
     if (activeTab === "potential") {
-      // Posts with more than 5 upvotes and business keywords could be potential leads
-      return convo.upvotes > 5 && hasBusinessKeywords;
+      // Posts with moderate opportunity score and business keywords
+      return (opportunityScore > 5) && hasClientKeywords && (hasBusinessKeywords || hasTechKeywords);
     }
-    if (activeTab === "trending") {
-      // Posts with more than 10 comments and business keywords could be considered trending
-      return convo.comments > 10 && hasBusinessKeywords;
+    
+    if (activeTab === "ai") {
+      // Posts specifically about AI
+      return titleAndContent.includes("ai") || 
+             titleAndContent.includes("artificial intelligence") ||
+             titleAndContent.includes("machine learning") ||
+             titleAndContent.includes("automation");
     }
+    
     return true; // "all" tab shows everything
   });
 
@@ -177,6 +204,50 @@ const Dashboard = () => {
               </div>
             </CardHeader>
             <CardContent>
+              <div className="mb-4">
+                <div className="inline-flex h-10 items-center justify-center rounded-md bg-muted p-1 text-muted-foreground">
+                  <button
+                    className={`inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+                      activeTab === "opportunities"
+                        ? "bg-background text-foreground shadow-sm"
+                        : "hover:bg-background/50"
+                    }`}
+                    onClick={() => setActiveTab("opportunities")}
+                  >
+                    Business Opportunities
+                  </button>
+                  <button
+                    className={`inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+                      activeTab === "potential"
+                        ? "bg-background text-foreground shadow-sm"
+                        : "hover:bg-background/50"
+                    }`}
+                    onClick={() => setActiveTab("potential")}
+                  >
+                    Potential Leads
+                  </button>
+                  <button
+                    className={`inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+                      activeTab === "ai"
+                        ? "bg-background text-foreground shadow-sm"
+                        : "hover:bg-background/50"
+                    }`}
+                    onClick={() => setActiveTab("ai")}
+                  >
+                    AI Discussion
+                  </button>
+                  <button
+                    className={`inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+                      activeTab === "all"
+                        ? "bg-background text-foreground shadow-sm"
+                        : "hover:bg-background/50"
+                    }`}
+                    onClick={() => setActiveTab("all")}
+                  >
+                    All Posts
+                  </button>
+                </div>
+              </div>
               <FilterTabs 
                 activeTab={activeTab}
                 setActiveTab={setActiveTab}

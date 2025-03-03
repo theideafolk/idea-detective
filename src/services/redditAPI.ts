@@ -19,6 +19,22 @@ const USE_MOCK_DATA = false;
 // Flag to enable verbose debug logging for authentication
 const DEBUG_AUTH = true;
 
+// Default target business subreddits - focused on tech and business topics
+const DEFAULT_BUSINESS_SUBREDDITS = "SaaS+AI_Agents+artificial+startups+Entrepreneur+OpenAI+boltnewbuilders+webdev+programming+smallbusiness";
+
+// Business opportunity triggers - words that indicate someone might need AI/dev services
+const BUSINESS_OPPORTUNITY_TRIGGERS = [
+  "need developer", "looking for developer", "seeking developer", 
+  "need help with", "want to build", "looking to implement", 
+  "need advice on", "anyone know how to", "help with implementation",
+  "need technical partner", "need tech cofounder", "technical challenge",
+  "MVP development", "app development", "website development",
+  "AI implementation", "AI solution", "automation solution",
+  "custom development", "software development", "app builder",
+  "no-code solution", "low-code platform", "development agency",
+  "tech stack recommendation", "development cost", "hiring developer"
+];
+
 // Types for our Reddit API data
 export interface RedditPost {
   id: string;
@@ -31,6 +47,8 @@ export interface RedditPost {
   content: string;
   commentsList: RedditComment[];
   permalink: string;
+  isBusinessOpportunity?: boolean; // Flag for business opportunity posts
+  opportunityScore?: number; // Score indicating how likely this is a business opportunity
 }
 
 export interface RedditComment {
@@ -168,21 +186,35 @@ export const searchRedditPosts = async (query: string, subreddits?: string): Pro
     return getMockRedditPosts();
   }
   
+  // Use default business subreddits if none provided
+  const targetSubreddits = subreddits || DEFAULT_BUSINESS_SUBREDDITS;
+  
+  // Create a more targeted search query if none provided
+  let searchQuery = query;
+  if (!query || query.trim() === '') {
+    // Randomly select 5 business opportunity triggers for the search
+    const selectedTriggers = [];
+    const shuffledTriggers = [...BUSINESS_OPPORTUNITY_TRIGGERS].sort(() => 0.5 - Math.random());
+    for (let i = 0; i < Math.min(5, shuffledTriggers.length); i++) {
+      selectedTriggers.push(shuffledTriggers[i]);
+    }
+    searchQuery = selectedTriggers.join(" OR ");
+  }
+  
   // Construct search endpoint based on query and subreddits
   let searchEndpoint;
   
-  if (query) {
+  if (searchQuery) {
     // If both query and subreddits provided, search within those subreddits
-    if (subreddits) {
-      searchEndpoint = `https://oauth.reddit.com/r/${subreddits}/search.json?q=${encodeURIComponent(query)}&restrict_sr=true&sort=relevance&limit=25&t=month`;
+    if (targetSubreddits) {
+      searchEndpoint = `https://oauth.reddit.com/r/${targetSubreddits}/search.json?q=${encodeURIComponent(searchQuery)}&restrict_sr=true&sort=relevance&limit=30&t=month`;
     } else {
       // Just search all of Reddit with the query
-      searchEndpoint = `https://oauth.reddit.com/search.json?q=${encodeURIComponent(query)}&sort=relevance&limit=25&t=month`;
+      searchEndpoint = `https://oauth.reddit.com/search.json?q=${encodeURIComponent(searchQuery)}&sort=relevance&limit=30&t=month`;
     }
   } else {
-    // If no query provided, get hot posts from specified subreddits or default business subreddits
-    const defaultSubreddits = subreddits || 'SaaS+AI_Agents+artificial+business+Entrepreneur+startups';
-    searchEndpoint = `https://oauth.reddit.com/r/${defaultSubreddits}/hot.json?limit=25`;
+    // If no query provided, get hot posts from specified subreddits
+    searchEndpoint = `https://oauth.reddit.com/r/${targetSubreddits}/hot.json?limit=30`;
   }
   
   try {
@@ -206,8 +238,45 @@ export const searchRedditPosts = async (query: string, subreddits?: string): Pro
     const data = await response.json();
     
     // Create RedditPost objects from the API response
-    return data.data.children.map((child: any) => {
+    const posts = data.data.children.map((child: any) => {
       const post = child.data;
+      
+      // Calculate an opportunity score based on keywords in title and content
+      const combinedText = (post.title + " " + (post.selftext || "")).toLowerCase();
+      
+      // Calculate opportunity score based on relevant keywords
+      let opportunityScore = 0;
+      let isBusinessOpportunity = false;
+      
+      // Check for business opportunity trigger phrases
+      for (const trigger of BUSINESS_OPPORTUNITY_TRIGGERS) {
+        if (combinedText.includes(trigger.toLowerCase())) {
+          opportunityScore += 5;
+          isBusinessOpportunity = true;
+        }
+      }
+      
+      // Additional scoring for specific keywords
+      const businessKeywords = ["ai", "developer", "implementation", "help", "looking for", "need", 
+                               "custom", "app", "website", "build", "mvp", "software", "automation"];
+      
+      for (const keyword of businessKeywords) {
+        if (combinedText.includes(keyword)) {
+          opportunityScore += 2;
+        }
+      }
+      
+      // Extra points for certain subreddits that often have business inquiries
+      const highValueSubreddits = ["startups", "entrepreneur", "saas", "ai_agents", "smallbusiness"];
+      if (highValueSubreddits.includes(post.subreddit.toLowerCase())) {
+        opportunityScore += 5;
+      }
+      
+      // Text length often indicates more detailed inquiries
+      if (post.selftext && post.selftext.length > 500) {
+        opportunityScore += 3;
+      }
+      
       return {
         id: post.id,
         title: post.title,
@@ -219,8 +288,13 @@ export const searchRedditPosts = async (query: string, subreddits?: string): Pro
         content: post.selftext || post.url || '',
         permalink: post.permalink,
         commentsList: [], // Comments will be fetched separately
+        isBusinessOpportunity,
+        opportunityScore
       };
     });
+    
+    // Sort by opportunity score
+    return posts.sort((a, b) => (b.opportunityScore || 0) - (a.opportunityScore || 0));
   } catch (error) {
     console.error("Error searching Reddit:", error);
     toast({
@@ -312,84 +386,92 @@ const getMockRedditPosts = (): RedditPost[] => {
   return [
     {
       id: "post1",
-      title: "Anyone know a good SEO tool that doesn't cost a fortune?",
-      subreddit: "r/SEO",
-      author: "digital_marketer",
-      upvotes: 45,
-      comments: 23,
-      time: "2 hours ago",
-      content: "I've been using a free version of an SEO tool but it's severely limited. Looking for recommendations on affordable options that won't break the bank but still have good keyword research capabilities and competitor analysis.",
-      permalink: "/r/SEO/comments/post1",
+      title: "Looking for developer to implement AI for my financial services business",
+      subreddit: "r/AI_Agents",
+      author: "business_owner",
+      upvotes: 15,
+      comments: 8,
+      time: "2 days ago",
+      content: "I'm running a financial services company and want to implement AI to automate customer inquiries and data analysis. Looking for recommendations on hiring a developer or agency. Budget is flexible for the right solution. Anyone have experience with this?",
+      permalink: "/r/AI_Agents/comments/post1",
+      isBusinessOpportunity: true,
+      opportunityScore: 25,
       commentsList: [
-        { id: "c1", author: "SEO_expert", text: "I'd recommend Ahrefs or SEMrush. They're not cheap but worth the investment.", upvotes: 15 },
-        { id: "c2", author: "budget_marketer", text: "Check out Ubersuggest. It has a good free tier and the paid version is reasonable.", upvotes: 8 },
-        { id: "c3", author: "marketing_pro", text: "I use a combination of free tools - Google Search Console, Keyword Surfer extension, and Google Trends. Works pretty well for basic needs.", upvotes: 12 }
+        { id: "c1", author: "ai_expert", text: "I'd recommend starting with a specific use case rather than trying to implement AI across the board. Happy to chat about your specific needs.", upvotes: 6 },
+        { id: "c2", author: "dev_agency", text: "We've helped financial services companies implement AI solutions. The key is ensuring data security compliance. Feel free to DM for more info.", upvotes: 4 },
+        { id: "c3", author: "freelancer", text: "For something like this, you probably want an agency rather than a single developer. There are many moving parts to consider.", upvotes: 3 }
       ]
     },
     {
       id: "post2",
-      title: "Looking for recommendations on social media management tools",
-      subreddit: "r/socialmedia",
-      author: "content_creator",
-      upvotes: 32,
-      comments: 17,
-      time: "5 hours ago",
-      content: "I need to manage accounts across Twitter, Instagram, and LinkedIn. Looking for a tool that allows scheduling, analytics, and ideally some content suggestions. Budget is around $30/month.",
-      permalink: "/r/socialmedia/comments/post2",
+      title: "Need help building MVP for my SaaS idea",
+      subreddit: "r/SaaS",
+      author: "startup_founder",
+      upvotes: 22,
+      comments: 12,
+      time: "3 days ago",
+      content: "I have a SaaS idea that I believe has real potential, but I'm not technical. Looking for advice on finding a technical partner or agency to help build an MVP. How do I validate the idea without spending too much? What's a reasonable budget for a basic MVP these days?",
+      permalink: "/r/SaaS/comments/post2",
+      isBusinessOpportunity: true,
+      opportunityScore: 30,
       commentsList: [
-        { id: "c4", author: "social_guru", text: "Buffer or Hootsuite are solid options in that price range.", upvotes: 7 },
-        { id: "c5", author: "insta_manager", text: "Later.com is great specifically for Instagram but handles other platforms too.", upvotes: 4 },
-        { id: "c6", author: "marketing_agency", text: "We use Sprout Social for our clients, but it might be outside your budget. For personal use, Buffer should work well.", upvotes: 9 }
+        { id: "c4", author: "tech_advisor", text: "Before building anything, talk to 20 potential customers and confirm they'd pay for this. Then consider no-code tools for validation before custom development.", upvotes: 9 },
+        { id: "c5", author: "dev_shop", text: "We specialize in MVPs for non-technical founders. Typical cost ranges from $15K-$30K depending on complexity. DM for more details.", upvotes: 6 },
+        { id: "c6", author: "successful_founder", text: "I was in your shoes last year. Found a technical co-founder on AngelList who built our MVP. Now we have 50 paying customers.", upvotes: 7 }
       ]
     },
     {
       id: "post3",
-      title: "What project management software do you use for remote teams?",
-      subreddit: "r/projectmanagement",
-      author: "remote_pm",
-      upvotes: 67,
-      comments: 41,
+      title: "Anyone using bolt.new for building AI apps? Need advice",
+      subreddit: "r/boltnewbuilders",
+      author: "newbie_dev",
+      upvotes: 18,
+      comments: 6,
       time: "1 day ago",
-      content: "Our team of 12 people is now fully remote across 3 time zones. We're looking to switch from our current PM tool to something more remote-friendly with better async communication features. Any recommendations?",
-      permalink: "/r/projectmanagement/comments/post3",
+      content: "Just discovered bolt.new and it seems amazing for building AI apps quickly. Has anyone here used it for a production app? Looking for tips on connecting APIs and organizing the codebase. Willing to pay for some guidance to speed up my learning curve.",
+      permalink: "/r/boltnewbuilders/comments/post3",
+      isBusinessOpportunity: true,
+      opportunityScore: 20,
       commentsList: [
-        { id: "c7", author: "agile_coach", text: "Asana has worked really well for our remote team. The timeline view is especially helpful.", upvotes: 22 },
-        { id: "c8", author: "tech_lead", text: "We use a combination of GitHub Projects and Slack. Works well for engineering teams.", upvotes: 18 },
-        { id: "c9", author: "product_manager", text: "Monday.com has been great for us. Very visual and customizable.", upvotes: 15 },
-        { id: "c10", author: "startup_founder", text: "ClickUp is worth checking out. It has most features of the premium tools at a better price point.", upvotes: 11 }
+        { id: "c7", author: "bolt_expert", text: "Been using Bolt for 3 months. Happy to jump on a call and walk you through some basics. It's much faster than traditional development.", upvotes: 5 },
+        { id: "c8", author: "agency_founder", text: "Our agency has built several apps with bolt.new. The key is understanding prompt engineering. We offer mentoring if you're interested.", upvotes: 4 },
+        { id: "c9", author: "solo_founder", text: "I launched my MVP in 2 weeks with bolt.new despite having no coding experience. Best decision I made.", upvotes: 3 }
       ]
     },
     {
       id: "post4",
-      title: "Best email marketing platform for a small e-commerce business?",
-      subreddit: "r/marketing",
-      author: "shopowner",
-      upvotes: 28,
-      comments: 19,
-      time: "7 hours ago",
-      content: "We have about 5,000 subscribers and want to improve our email marketing. Currently using Mailchimp but wondering if there are better options for segmentation and automation that won't break the bank.",
-      permalink: "/r/marketing/comments/post4",
+      title: "Best AI tools for small business automation?",
+      subreddit: "r/smallbusiness",
+      author: "business_owner22",
+      upvotes: 35,
+      comments: 22,
+      time: "4 days ago",
+      content: "Running a 10-person professional services firm and looking to automate some of our repetitive tasks like client onboarding, document processing, and initial consultations. What AI tools would you recommend? Would prefer something that doesn't require heavy development work, but open to custom solutions for the right ROI.",
+      permalink: "/r/smallbusiness/comments/post4",
+      isBusinessOpportunity: true,
+      opportunityScore: 28,
       commentsList: [
-        { id: "c11", author: "email_expert", text: "Klaviyo is fantastic for e-commerce. Better segmentation than Mailchimp and great automation features.", upvotes: 14 },
-        { id: "c12", author: "digital_marketer", text: "ActiveCampaign is another good option with powerful automation. Might be worth checking out.", upvotes: 8 },
-        { id: "c13", author: "ecom_consultant", text: "I'd stick with Mailchimp if you're not using the advanced features yet. Their new updates have improved a lot.", upvotes: 5 }
+        { id: "c10", author: "automation_expert", text: "Consider Zapier + OpenAI for simple workflows. For more complex needs, you'll want a custom solution.", upvotes: 12 },
+        { id: "c11", author: "smb_consultant", text: "We've helped several small businesses implement automation. Starting with just document processing can save 15-20 hours/week. DM for more info.", upvotes: 8 },
+        { id: "c12", author: "ai_agency", text: "The key is identifying which processes are worth automating. We offer a free consultation to analyze your workflow and suggest the highest-ROI opportunities.", upvotes: 6 }
       ]
     },
     {
       id: "post5",
-      title: "Pros and cons of using AI for content generation?",
-      subreddit: "r/marketing",
-      author: "content_manager",
-      upvotes: 52,
-      comments: 37,
-      time: "12 hours ago",
-      content: "Our team is considering using AI tools like GPT-4 to help with content generation. Has anyone here implemented this in their workflow? What are the benefits and drawbacks you've experienced?",
-      permalink: "/r/marketing/comments/post5",
+      title: "Looking for recommendations on AI implementation for customer service",
+      subreddit: "r/OpenAI",
+      author: "ecommerce_owner",
+      upvotes: 42,
+      comments: 31,
+      time: "2 days ago",
+      content: "Our ecommerce business is growing rapidly and customer service is becoming a bottleneck. Looking to implement AI to handle common questions and free up our team for more complex issues. Has anyone successfully implemented this? What platforms/agencies would you recommend? Our volume is about 500 tickets/day.",
+      permalink: "/r/OpenAI/comments/post5",
+      isBusinessOpportunity: true,
+      opportunityScore: 35,
       commentsList: [
-        { id: "c14", author: "ai_enthusiast", text: "We use it for first drafts and outlines. Quality is surprisingly good but still needs human editing for brand voice and accuracy.", upvotes: 19 },
-        { id: "c15", author: "seo_manager", text: "Be careful with AI content and SEO. Google's helpful content update targets AI-generated content that doesn't provide value.", upvotes: 21 },
-        { id: "c16", author: "content_director", text: "It's great for generating ideas and overcoming writer's block. We use it to brainstorm headlines and outlines, then our writers take over.", upvotes: 15 },
-        { id: "c17", author: "legal_advisor", text: "Make sure to check the terms of service for the AI tool you're using. Some claim ownership of output or have restrictions on commercial use.", upvotes: 12 }
+        { id: "c13", author: "ai_consultant", text: "We've implemented similar solutions for ecommerce clients using a combination of GPT-4 and a custom knowledge base. Results showed 70% ticket reduction. DM for details.", upvotes: 18 },
+        { id: "c14", author: "cs_manager", text: "We tried building in-house first and wasted 3 months. Eventually hired an agency and had it running in 3 weeks. Worth the investment.", upvotes: 15 },
+        { id: "c15", author: "saas_founder", text: "There are several off-the-shelf solutions like Intercom with AI features, but at your scale, you might benefit from a custom implementation.", upvotes: 12 }
       ]
     }
   ];
