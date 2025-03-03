@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -70,7 +69,7 @@ const Dashboard = () => {
       const effectiveQuery = searchQuery || 
         BUSINESS_QUERY_TEMPLATES[Math.floor(Math.random() * BUSINESS_QUERY_TEMPLATES.length)];
       
-      // Fix: Pass the searchOptions object instead of individual parameters
+      // Updated: Properly passing options as an object
       return searchRedditPosts(effectiveQuery, {
         subreddits: targetSubreddits,
         timeFilter: timeFilter

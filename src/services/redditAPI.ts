@@ -179,7 +179,7 @@ const getRedditAccessToken = async (): Promise<string> => {
 /**
  * Search Reddit for posts matching a query, with optional subreddit filtering
  */
-export const searchRedditPosts = async (query: string, subreddits?: string): Promise<RedditPost[]> => {
+export const searchRedditPosts = async (query: string, options?: { subreddits?: string, timeFilter?: string }): Promise<RedditPost[]> => {
   // Don't use mock data - always try to use the real API
   if (false) {
     console.log("Using mock data while authentication issues are being resolved");
@@ -187,7 +187,7 @@ export const searchRedditPosts = async (query: string, subreddits?: string): Pro
   }
   
   // Use default business subreddits if none provided
-  const targetSubreddits = subreddits || DEFAULT_BUSINESS_SUBREDDITS;
+  const targetSubreddits = options?.subreddits || DEFAULT_BUSINESS_SUBREDDITS;
   
   // Create a more targeted search query if none provided
   let searchQuery = query;
@@ -201,16 +201,19 @@ export const searchRedditPosts = async (query: string, subreddits?: string): Pro
     searchQuery = selectedTriggers.join(" OR ");
   }
   
+  // Get the time filter from options or use default
+  const timeFilter = options?.timeFilter || 'month';
+  
   // Construct search endpoint based on query and subreddits
   let searchEndpoint;
   
   if (searchQuery) {
     // If both query and subreddits provided, search within those subreddits
     if (targetSubreddits) {
-      searchEndpoint = `https://oauth.reddit.com/r/${targetSubreddits}/search.json?q=${encodeURIComponent(searchQuery)}&restrict_sr=true&sort=relevance&limit=30&t=month`;
+      searchEndpoint = `https://oauth.reddit.com/r/${targetSubreddits}/search.json?q=${encodeURIComponent(searchQuery)}&restrict_sr=true&sort=relevance&limit=30&t=${timeFilter}`;
     } else {
       // Just search all of Reddit with the query
-      searchEndpoint = `https://oauth.reddit.com/search.json?q=${encodeURIComponent(searchQuery)}&sort=relevance&limit=30&t=month`;
+      searchEndpoint = `https://oauth.reddit.com/search.json?q=${encodeURIComponent(searchQuery)}&sort=relevance&limit=30&t=${timeFilter}`;
     }
   } else {
     // If no query provided, get hot posts from specified subreddits
